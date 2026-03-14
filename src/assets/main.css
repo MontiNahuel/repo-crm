@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  /* Registramos los nombres de las clases para Tailwind 4 */
+  --color-sidebar: var(--sidebar);
+  --color-border-main: var(--border-main);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-bg-hover: var(--bg-hover);
+}
+
+:root {
+  --sidebar: #ffffff;
+  --border-main: #f3f4f6;
+  /* gray-100 */
+  --text-main: #111827;
+  /* gray-900 */
+  --text-muted: #4b5563;
+  /* gray-600 */
+  --bg-hover: #ebecec;
+  /* gray-50 */
+  --bg-main: #f8fafc;
+  /* Gris muy clarito */
+}
+
+.dark {
+  --sidebar: #0f172a;
+  /* Slate 900 */
+  --border-main: #1e293b;
+  /* Slate 800 */
+  --text-main: #f8fafc;
+  /* Slate 50 */
+  --text-muted: #94a3b8;
+  /* Slate 400 */
+  --bg-hover: #1e293b;
+  /* Slate 800 */
+  --bg-main: #020617;
+  /* Negro profundo (puedes usar el mismo que sidebar si prefieres) */
+}
