@@ -5,6 +5,9 @@ import { formatearFechaHora } from '@/core/dependencias'
 import CrearTareaModal from '../modals/CrearTareaModal.vue'
 import ModalConfirmacion from '../modals/ModalConfirmacion.vue'
 import { type Tarea } from '@/services/tareas/interfacesTareas'
+import { useSocket } from '@/composables/useSocket'
+
+const { socket } = useSocket()
 
 const tareas = ref<Tarea[]>([])
 const cargando = ref(true)
@@ -109,6 +112,10 @@ const abrirModalCrear = () => {
 
 
 onMounted(cargarTareas)
+
+socket.on('tareas_actualizadas', () => {
+    cargarTareas()
+})
 
 </script>
 

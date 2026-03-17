@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { useThemeStore } from '@/stores/themeStore'
+import { useAuthStore } from '@/stores/authStore'
+import { useToast } from '@/composables/useToast'
+
 const themeStore = useThemeStore()
+
+const authStore = useAuthStore()
+const toast = useToast()
+
+const cerrarSesion = () => {
+    authStore.logout()
+    toast.info('Sesión cerrada')
+}
 </script>
 
 <template>
@@ -34,6 +45,15 @@ const themeStore = useThemeStore()
                 Clientes
             </router-link>
 
+            <router-link 
+                         v-if="authStore.userRole?.toLowerCase() === 'admin'"
+                         to="/admin" 
+                         class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-text-muted hover:bg-bg-hover hover:text-text-main transition-colors font-medium"
+                         active-class="bg-bg-active text-text-active font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 002.573 1.036c1.543 -.94 3.318 .826 2.368 2.378l-1.998 1.998c-.98 .98 -1.67 .6 -1 .6h-1c-.67 0 -1 .3 -1 .6l-1.998 1.998c-.95 -1.552 .824 -3.326 2.378 -2.378l1.998 -1.998c-.6 -.6 -1 -.6 -1 -.6h-1c-.67 0 -1 .3 -1 .6l-1.998 1.998c-.95 -1.552 .824 -3.326 2.378 -2.378l1.998 -1.998c-.426 -1.756 -2.924 -1.756 -3.35 0a1.724 1.724 0 00-2.573 1.036c-1.543 -.94 -3.318 .826 -2.368 2.378l1.998 1.998c-.98 .98 -1.67 .6 -1 .6h-1c-.67 0 -1 .3 -1 .6l-1.998 1.998c-.95 -1.552 .824 -3.326 2.378 -2.378l1.998 -1.998c-.6 -.6 -1 -.6 -1 -.6h-1c-.67 0 -1 .3 -1 .6l-1.998 1.998c-.95 -1.552 .824 -3.326 2.378 -2.378l1.998 -1.998c-.426 -1.756 -2.924 -1.756 -3.35 0a1.724 1.724 0 00-2.573 1.036c-1.543 -.94 -3.318 .826 -2.368 2.378l1.998 1.998c-.98 .98 -1.67 .6 -1 .6h-1c-.67 0 -1 .3 -1 .6l-1.998 1.998c-.95 -1.552 .824 -3.326 2.378 -2.378l1.998 -1.998c-.6 -.6 -1 -.6 -1 -.6h-1c-.67 0 -1 .3 -1 .6l-1.998 1.998c-.95 -1.552 .824 -3.326 2.378 -2.378l2 -.002z"></path></svg>
+                Administración
+            </router-link>
+
         </nav>
 
         <div class="p-4 border-t border-border-main">
@@ -43,7 +63,9 @@ const themeStore = useThemeStore()
                 </div>
                 <div class="text-left flex-1">
                     <p class="font-bold text-text-main">Vendedor</p>
-                    <p class="text-xs text-text-muted">Cerrar sesión</p>
+                    <button @click="cerrarSesion" class="text-xs text-text-muted hover:text-text-main transition">
+                        <p>Cerrar sesión</p>
+                    </button>
                 </div>
             </button>
         </div>
