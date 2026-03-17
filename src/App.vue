@@ -12,6 +12,15 @@ import ToastContainer from './components/ui/ToastContainer.vue';
   <ToastContainer />
 </template>
 */
+import { onMounted } from 'vue';
+import { useThemeStore } from '@/stores/themeStore';
+
+const themeStore = useThemeStore();
+
+// Apenas arranca la app, leemos la memoria y aplicamos el tema
+onMounted(() => {
+  themeStore.loadTheme();
+});
 </script>
 
 <template>

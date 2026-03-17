@@ -12,6 +12,7 @@ const cerrarSesion = () => {
     authStore.logout()
     toast.info('Sesión cerrada')
 }
+
 </script>
 
 <template>
