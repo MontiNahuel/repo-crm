@@ -28,7 +28,8 @@ export const clientService = {
     },
 
     async getClientsByRole(role: string | null) {
-        return role === 'ADMIN' ? this.getClients() : this.getClientsByUser();
+        //return role === 'ADMIN' ? this.getClients() : this.getClientsByUser();
+        return this.getClientsByUser();
     },
 
     async getClientesPaginadosPorUsuario(skip: number = 0, limit: number = 10, busqueda: string = ''): Promise<IPaginacionClientes> {

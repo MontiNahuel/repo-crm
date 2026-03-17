@@ -203,10 +203,12 @@ socket.on('tareas_actualizadas', () => {
             </li>
         </ul>
 
-        <div class="mt-4 pt-4 border-t border-border-main transition-colors">
-            <button class="w-full text-center text-sm text-text-muted hover:text-text-main font-medium transition-colors">
+        <div class="w-full mt-4 pt-4 border-t border-border-main transition-colors flex justify-center">
+            <router-link 
+                    to="/todo" 
+                    class="flex items-center text-sm text-text-muted hover:text-text-main font-medium transition-colors">
                 Ver todo mi To-Do
-            </button>
+            </router-link>
         </div>
     </div>
 </template>

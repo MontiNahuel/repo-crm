@@ -5,6 +5,7 @@ import LoginView from '@/view/LoginView.vue'
 import DashboardView from '@/view/DashboardView.vue'
 import ClientesView from '@/view/ClientesView.vue'
 import panelAdmin from '@/view/admin/panelAdmin.vue'
+import TodoView from '@/view/TodoView.vue'
 
 import { useAuthStore } from '@/stores/authStore';
 
@@ -40,6 +41,12 @@ const router = createRouter({
           path: '/clientes', // Es /clientes
           name: 'clientes',
           component: ClientesView,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/todo', // Es /todo
+          name: 'todo',
+          component: TodoView,
           meta: { requiresAuth: true }
         },
         {

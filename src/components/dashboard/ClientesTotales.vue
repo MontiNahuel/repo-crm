@@ -12,7 +12,7 @@ onMounted(async () => {
     try {
         console.log('Cargando total de clientes para el rol:', authStore.userRole)
         const data = await clientService.getClientsByRole(authStore.userRole)
-        totalClientes.value = data.length
+        totalClientes.value = data.cantidadClientes
     } catch (error) {
         console.error('Error al cargar total de clientes:', error)
     } finally {
