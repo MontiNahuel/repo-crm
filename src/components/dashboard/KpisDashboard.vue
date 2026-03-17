@@ -46,9 +46,9 @@ onMounted(async () => {
                 titulo="Leads Nuevos" 
                 :valor="estadisticas.kpis.leads_pendientes" 
                 descripcion="Aún no contactados" 
-                colorDescripcion="text-orange-600">
+                colorDescripcion="text-orange-600 dark:text-orange-400">
                 <template #icono>
-                    <div class="p-2 bg-orange-50 rounded-lg">
+                    <div class="p-2 bg-orange-50 dark:bg-orange-500/10 rounded-lg">
                         <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     </div>
                 </template>
@@ -58,9 +58,9 @@ onMounted(async () => {
                 titulo="Clientes Activos" 
                 :valor="estadisticas.kpis.clientes_activos" 
                 descripcion="Compradores recurrentes" 
-                colorDescripcion="text-green-600">
+                colorDescripcion="text-green-600 dark:text-green-400">
                 <template #icono>
-                    <div class="p-2 bg-green-50 rounded-lg">
+                    <div class="p-2 bg-green-50 dark:bg-green-500/10 rounded-lg">
                         <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                 </template>
@@ -71,43 +71,43 @@ onMounted(async () => {
                 :valor="estadisticas.kpis.total_historico" 
                 descripcion="Registros en base de datos">
                 <template #icono>
-                    <div class="p-2 bg-gray-50 rounded-lg">
-                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    <div class="p-2 bg-gray-50 dark:bg-gray-500/10 rounded-lg">
+                        <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     </div>
                 </template>
             </KpiCard>
         </div>
 
-        <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm mt-6">
-            <h4 class="text-sm font-bold text-gray-800 mb-4">Estado del Pipeline</h4>
+        <div class="bg-sidebar rounded-2xl p-6 border border-border-main shadow-sm mt-6 transition-colors duration-300">
+            <h4 class="text-sm font-bold text-text-main mb-4">Estado del Pipeline</h4>
             
             <div class="grid grid-cols-4 gap-2">
                 <KpiPipelineItem 
                     :valor="estadisticas.pipeline.LEAD" 
                     etiqueta="Leads" 
-                    colorFondo="bg-orange-100" 
-                    colorTexto="text-orange-700" 
+                    colorFondo="bg-orange-100 dark:bg-orange-500/20" 
+                    colorTexto="text-orange-700 dark:text-orange-400" 
                 />
                 
                 <KpiPipelineItem 
                     :valor="estadisticas.pipeline.ACTIVO" 
                     etiqueta="Activos" 
-                    colorFondo="bg-green-100" 
-                    colorTexto="text-green-700" 
+                    colorFondo="bg-green-100 dark:bg-green-500/20" 
+                    colorTexto="text-green-700 dark:text-green-400" 
                 />
 
                 <KpiPipelineItem 
                     :valor="estadisticas.pipeline.INACTIVO" 
                     etiqueta="Inactivos" 
-                    colorFondo="bg-blue-100" 
-                    colorTexto="text-blue-700" 
+                    colorFondo="bg-blue-100 dark:bg-blue-500/20" 
+                    colorTexto="text-blue-700 dark:text-blue-400" 
                 />
 
                 <KpiPipelineItem 
                     :valor="estadisticas.pipeline.PERDIDO" 
                     etiqueta="Perdidos" 
-                    colorFondo="bg-red-100" 
-                    colorTexto="text-red-700" 
+                    colorFondo="bg-red-100 dark:bg-red-500/20" 
+                    colorTexto="text-red-700 dark:text-red-400" 
                 />
             </div>
         </div>

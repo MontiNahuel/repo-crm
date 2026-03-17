@@ -43,39 +43,41 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h2 class="text-xl font-bold text-gray-800 mb-6">Actividad Reciente</h2>
+    <div class="bg-sidebar p-6 rounded-xl shadow-sm border border-border-main transition-colors duration-300">
+        <h2 class="text-xl font-bold text-text-main mb-6 transition-colors">Actividad Reciente</h2>
 
         <div v-if="cargandoActividad" class="space-y-4">
-            <div v-for="i in 3" :key="i" class="h-16 bg-gray-100 animate-pulse rounded-lg"></div>
+            <div v-for="i in 3" :key="i" class="h-16 bg-bg-hover animate-pulse rounded-lg"></div>
         </div>
 
         <ul v-else class="space-y-6">
             <li v-for="item in actividades" :key="item.id" class="flex gap-4">
+                
                 <div :class="['w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0', getActionColor(item.cambio)]">
                     <span class="text-xs font-bold">●</span>
                 </div>
 
                 <div class="flex-1">
-                    <p class="text-sm text-gray-800">
-                        <span class="font-semibold">
+                    <p class="text-sm text-text-main transition-colors">
+                        <span class="font-bold text-text-main">
                             {{ item.usuario.email.split('@')[0] }}
                         </span> 
                         {{ item.cambio }} de
-                        <span class="font-bold text-gray-900 italic">
+                        <span class="font-extrabold text-text-main italic">
                             "{{ item.cliente.nombre }}"
                         </span>
                     </p>
                     <div class="flex items-center gap-2 mt-1">
-                        <span class="text-xs text-gray-400 italic">
+                        <span class="text-xs text-text-muted italic transition-colors">
                             {{ new Date(item.fecha).toLocaleString() }}
                         </span>
                     </div>
                 </div>
+                
             </li>
         </ul>
 
-        <div v-if="!cargandoActividad && actividades.length === 0" class="text-center py-8 text-gray-400">
+        <div v-if="!cargandoActividad && actividades.length === 0" class="text-center py-8 text-text-muted transition-colors">
             No hay actividad registrada aún.
         </div>
     </div>

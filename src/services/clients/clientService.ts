@@ -17,6 +17,7 @@ export const clientService = {
     async getClientsByUser() {
         try {
             const { data } = await api.get('/clientes/mis-clientes');
+            //console.log('Clientes obtenidos por usuario:', data);
             return data;
         } catch (error) {
             if (error instanceof Error) {
@@ -26,11 +27,11 @@ export const clientService = {
         }
     },
 
-    async getClientsByRole(role : string | null) {
+    async getClientsByRole(role: string | null) {
         return role === 'ADMIN' ? this.getClients() : this.getClientsByUser();
     },
 
-    async getClientesPaginadosPorUsuario(skip: number = 0, limit: number = 10, busqueda : string = '') : Promise<IPaginacionClientes> {
+    async getClientesPaginadosPorUsuario(skip: number = 0, limit: number = 10, busqueda: string = ''): Promise<IPaginacionClientes> {
         try {
             const params: IParamsForClientesPaginados = { skip, limit };
             if (busqueda) {
@@ -55,7 +56,7 @@ export const clientService = {
         } catch (error) {
             if (error instanceof Error) {
                 throw new Error(`An error occurred while creating the client: ${error.message}`);
-            }            
+            }
             throw new Error('An unexpected error occurred while creating the client. Please try again later.');
         }
     }

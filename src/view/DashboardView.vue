@@ -7,20 +7,21 @@ import UltimasTareas from '@/components/dashboard/UltimasTareas.vue'
 import { useToast } from '@/composables/useToast'
 
 const authStore = useAuthStore()
-
 const toast = useToast()
 
 const cerrarSesion = () => {
     authStore.logout()
     toast.info('Sesión cerrada')
 }
-
 </script>
 
 <template>
-    <div class="p-8 bg-gray-50 min-h-screen">
+    <div class="min-h-screen">
+        
         <div class="flex items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">Panel de Control ({{ authStore.userRole === 'ADMIN' && 'Administrador' }})</h1>
+            <h1 class="text-3xl font-bold text-text-main transition-colors duration-300">
+                Panel de Control {{ authStore.userRole === 'ADMIN' ? '(Administrador)' : '' }}
+            </h1>
             
             <button 
                 class="ml-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow transition duration-200"

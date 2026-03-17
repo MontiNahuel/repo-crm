@@ -1,39 +1,106 @@
 @import "tailwindcss";
 
 @theme {
-  /* Registramos los nombres de las clases para Tailwind 4 */
+  /* Registramos los tokens */
   --color-sidebar: var(--sidebar);
   --color-border-main: var(--border-main);
   --color-text-main: var(--text-main);
   --color-text-muted: var(--text-muted);
   --color-bg-hover: var(--bg-hover);
+  --color-bg-active: var(--bg-active);
+  --color-text-active: var(--text-active);
+
+  --color-bg-etiqueta-cliente: var(--bg-etiqueta-cliente);
+  --color-text-etiqueta-cliente: var(--text-etiqueta-cliente);
+
+  --color-bg-etiqueta-personal: var(--bg-etiqueta-personal);
+  --color-text-etiqueta-personal: var(--text-etiqueta-personal);
+
+  --color-text-icon-default: var(--text-icon-default);
+
+  --color-text-icon-edit-hover: var(--text-icon-edit-hover);
+  --color-bg-icon-edit-hover: var(--bg-icon-edit-hover);
+
+  --color-text-icon-delete-hover: var(--text-icon-delete-hover);
+  --color-bg-icon-delete-hover: var(--bg-icon-delete-hover);
 }
 
+/* ☀️ MODO CLARO */
 :root {
   --sidebar: #ffffff;
   --border-main: #f3f4f6;
   /* gray-100 */
-  --text-main: #111827;
-  /* gray-900 */
+  --text-main: #1f2937;
+  /* gray-800 */
   --text-muted: #4b5563;
   /* gray-600 */
-  --bg-hover: #ebecec;
+  --bg-hover: #f9fafb;
   /* gray-50 */
+  --bg-active: #eff6ff;
+  /* blue-50 */
+  --text-active: #1d4ed8;
+  /* blue-700 */
   --bg-main: #f8fafc;
-  /* Gris muy clarito */
+
+  --bg-etiqueta-cliente: #eff6ff;
+  /* blue-50 */
+  --text-etiqueta-cliente: #1d4ed8;
+  /* blue-700 */
+
+  --bg-etiqueta-personal: #faf5ff;
+  --text-etiqueta-personal: #7e22ce;
+
+  --text-icon-default: #9ca3af;
+  /* gray-400 */
+
+  --text-icon-edit-hover: #2563eb;
+  /* blue-600 */
+  --bg-icon-edit-hover: #eff6ff;
+  /* blue-50 */
+
+  --text-icon-delete-hover: #dc2626;
+  /* red-600 */
+  --bg-icon-delete-hover: #fef2f2;
+  /* red-50 */
 }
 
+/* 🌙 MODO OSCURO */
 .dark {
   --sidebar: #0f172a;
-  /* Slate 900 */
+  /* slate-900 */
   --border-main: #1e293b;
-  /* Slate 800 */
+  /* slate-800 */
   --text-main: #f8fafc;
-  /* Slate 50 */
+  /* slate-50 */
   --text-muted: #94a3b8;
-  /* Slate 400 */
+  /* slate-400 */
   --bg-hover: #1e293b;
-  /* Slate 800 */
+  /* slate-800 */
+  --bg-active: rgba(30, 58, 138, 0.4);
+  /* blue-900 con transparencia */
+  --text-active: #60a5fa;
+  /* blue-400 */
   --bg-main: #020617;
-  /* Negro profundo (puedes usar el mismo que sidebar si prefieres) */
+
+  --bg-etiqueta-cliente: #1e3a8a;
+  /* El color oscuro que pasaste */
+  --text-etiqueta-cliente: #bfdbfe;
+  /* El texto oscuro que pasaste */
+
+  --bg-etiqueta-personal: #581c87;
+  --text-etiqueta-personal: #e9d5ff;
+
+  /* Modo Oscuro */
+  --text-icon-default: #6b7280;
+  /* gray-500 */
+
+  --text-icon-edit-hover: #60a5fa;
+  /* blue-400 */
+  --bg-icon-edit-hover: rgba(30, 58, 138, 0.3);
+  /* blue-900 al 30% */
+
+  --text-icon-delete-hover: #f87171;
+  /* red-400 */
+  --bg-icon-delete-hover: rgba(127, 29, 29, 0.3);
+  /* red-900 al 30% */
 }

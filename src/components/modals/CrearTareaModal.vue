@@ -50,7 +50,8 @@ watch(() => props.tareaAEditar, (nuevaTarea) => {
 onMounted(async () => {
     try {
         const data = await clientService.getClientsByUser() // Solo los clientes para admin
-        clientes.value = data
+        clientes.value = data.clientes
+        console.log("Clientes cargados para el select:", data)
     } catch (error) {
         console.error('Error al cargar clientes para el select:', error)
     }
@@ -86,11 +87,11 @@ const submitTarea = async () => {
 <template>
     <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-center">
         
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-fade-in-up">
+        <div class="bg-sidebar w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-fade-in-up transition-colors duration-300">
             
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <h3 class="text-lg font-bold text-gray-800">Agregar nueva tarea</h3>
-                <button @click="emit('close')" class="text-gray-400 hover:text-gray-600 transition">
+            <div class="px-6 py-4 border-b border-border-main flex justify-between items-center bg-bg-hover transition-colors">
+                <h3 class="text-lg font-bold text-text-main">Agregar nueva tarea</h3>
+                <button @click="emit('close')" class="text-text-muted hover:text-text-main transition-colors">
                     ✕
                 </button>
             </div>
@@ -98,53 +99,55 @@ const submitTarea = async () => {
             <form @submit.prevent="submitTarea" class="p-6 space-y-5">
                 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">¿Qué tenés que hacer?</label>
+                    <label class="block text-sm font-semibold text-text-main mb-1 transition-colors">¿Qué tenés que hacer?</label>
                     <input type="text" v-model="form.titulo" required autofocus
                            placeholder="Ej: Llamar para confirmar presupuesto..."
-                           class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                           class="w-full px-4 py-2 rounded-xl border border-border-main bg-bg-main text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition-colors placeholder:text-text-muted">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Tarea</label>
-                    <div class="flex p-1 bg-gray-100 rounded-lg" :class="{ 'opacity-60 cursor-not-allowed': tareaAEditar }">
+                    <label class="block text-sm font-semibold text-text-main mb-2 transition-colors">Tipo de Tarea</label>
+                    <div class="flex p-1 bg-bg-main border border-border-main rounded-lg transition-colors" :class="{ 'opacity-60 cursor-not-allowed': tareaAEditar }">
                         <label class="flex-1 text-center" :class="{ 'cursor-pointer': !tareaAEditar, 'cursor-not-allowed': tareaAEditar }">
                             <input type="radio" v-model="form.tipo" value="personal" class="peer hidden" :disabled="!!tareaAEditar">
-                            <div class="py-1.5 text-sm font-medium rounded-md text-gray-500 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">
+                            <div class="py-1.5 text-sm font-medium rounded-md text-text-muted peer-checked:bg-sidebar peer-checked:text-blue-500 peer-checked:shadow-sm transition-all">
                                 ⚡ Personal
                             </div>
                         </label>
                         <label class="flex-1 text-center" :class="{ 'cursor-pointer': !tareaAEditar, 'cursor-not-allowed': tareaAEditar }">
                             <input type="radio" v-model="form.tipo" value="cliente" class="peer hidden" :disabled="!!tareaAEditar">
-                            <div class="py-1.5 text-sm font-medium rounded-md text-gray-500 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">
+                            <div class="py-1.5 text-sm font-medium rounded-md text-text-muted peer-checked:bg-sidebar peer-checked:text-blue-500 peer-checked:shadow-sm transition-all">
                                 👤 De Cliente
                             </div>
                         </label>
                     </div>
-                    <p v-if="tareaAEditar" class="text-xs text-gray-400 mt-1 text-center">
+                    <p v-if="tareaAEditar" class="text-xs text-text-muted mt-2 text-center transition-colors">
                         El tipo de tarea no se puede modificar.
                     </p>
+                    
                     <div class="animate-fade-in mt-4">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">
-                            Fecha y Hora límite <span class="text-gray-400 font-normal">(Opcional)</span>
+                        <label class="block text-sm font-semibold text-text-main mb-1 transition-colors">
+                            Fecha y Hora límite <span class="text-text-muted font-normal">(Opcional)</span>
                         </label>
                         <input type="datetime-local" v-model="form.fecha_limite"
-                            class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition text-sm">
+                               class="w-full px-4 py-2 rounded-xl border border-border-main bg-bg-main text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition-colors text-sm dark:[color-scheme:dark]">
                     </div>
                 </div>
 
                 <div v-if="form.tipo === 'cliente'" class="animate-fade-in">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Seleccionar Cliente</label>
+                    <label class="block text-sm font-semibold text-text-main mb-1 transition-colors">Seleccionar Cliente</label>
                     <select v-model="form.cliente_id" :disabled="!!tareaAEditar" required
-                            class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                        <option :value="null" disabled>Elegí un cliente...</option>
+                            class="w-full px-4 py-2 rounded-xl border border-border-main bg-bg-main text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                        <option :value="null" disabled class="text-text-muted">Elegí un cliente...</option>
                         <option v-for="cliente in clientes" :key="cliente.id" :value="cliente.id">
-                            {{ cliente.nombre }} </option>
+                            {{ cliente.nombre }}
+                        </option>
                     </select>
                 </div>
 
                 <div class="pt-4 flex gap-3">
                     <button type="button" @click="emit('close')"
-                            class="flex-1 px-4 py-2 text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition">
+                            class="flex-1 px-4 py-2 text-sm font-bold text-text-main bg-bg-hover hover:bg-border-main border border-border-main rounded-xl transition-colors">
                         Cancelar
                     </button>
                     <button type="submit" :disabled="cargando"
