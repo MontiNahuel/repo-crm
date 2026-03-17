@@ -7,12 +7,16 @@ interface TokenPayload {
     sub: string;
     rol: string;
     exp: number;
+    nombre: string;
+    apellido: string;
 }
 
 export const useAuthStore = defineStore("auth", () => {
     const token = ref<string | null>(localStorage.getItem("token"));
     const userRole = ref<string | null>(null);
     const isAuthenticated = computed(() => token.value !== null && token.value !== '');
+    const name = ref<string | null>(null);
+    const subname = ref<string | null>(null);
 
 
     const updateRoleFromToken = () => {
@@ -20,6 +24,9 @@ export const useAuthStore = defineStore("auth", () => {
             try {
                 const decoded = jwtDecode<TokenPayload>(token.value);
                 userRole.value = decoded.rol;
+                name.value = decoded.nombre;
+                subname.value = decoded.apellido;
+
             } catch (error) {
                 console.error("Error decoding token:", error);
                 userRole.value = null;
@@ -39,8 +46,8 @@ export const useAuthStore = defineStore("auth", () => {
         token.value = null;
         localStorage.removeItem("token");
         userRole.value = null;
-        router.push({name: 'login'});
+        router.push({ name: 'login' });
     }
 
-    return {token, isAuthenticated, userRole, setToken, logout };
+    return { token, isAuthenticated, userRole, name, subname, setToken, logout };
 });

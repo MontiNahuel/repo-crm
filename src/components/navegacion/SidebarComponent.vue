@@ -63,7 +63,7 @@ const cerrarSesion = () => {
                     V
                 </div>
                 <div class="text-left flex-1">
-                    <p class="font-bold text-text-main">Vendedor</p>
+                    <p class="font-bold text-text-main">{{ authStore.name }} {{ authStore.subname }}</p>
                     <button @click="cerrarSesion" class="text-xs text-text-muted hover:text-text-main transition">
                         <p>Cerrar sesión</p>
                     </button>
