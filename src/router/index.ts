@@ -54,6 +54,12 @@ const router = createRouter({
           name: 'admin',
           component: panelAdmin,
           meta: { requiresAuth: true, requiresAdmin: true }
+        },
+        {
+          path: '/clientes/:id', // El :id es dinámico
+          name: 'cliente-detalle',
+          component: () => import('@/view/ClienteDetalleView.vue'), // Lazy loading para que sea rápido
+          meta: { requiresAuth: true }
         }
       ]
     }

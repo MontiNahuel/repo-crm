@@ -151,9 +151,10 @@ onMounted(() => {
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <button class="text-blue-500 hover:text-blue-400 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                <router-link :to="{ name: 'cliente-detalle', params: { id: cliente.id } }" 
+                                            class="text-blue-500 hover:text-blue-400 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity">
                                     Ver Detalle →
-                                </button>
+                                </router-link>
                             </td>
                         </tr>
                     </tbody>

@@ -60,5 +60,17 @@ export const clientService = {
             }
             throw new Error('An unexpected error occurred while creating the client. Please try again later.');
         }
+    },
+
+    async getClientById(id: number) {
+        try {
+            const { data } = await api.get(`/clientes/${id}`);
+            return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`An error occurred while fetching the client: ${error.message}`);
+            }
+            throw new Error('An unexpected error occurred while fetching the client. Please try again later.');
+        }
     }
 };
