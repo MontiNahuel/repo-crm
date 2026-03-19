@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { tareaService } from '@/services/tareas/tareaService';
+import { useTasks } from '@/composables/useTasks';
 import { type ITareaCreate, type Tarea } from '@/services/tareas/interfacesTareas';
 import { clientService } from '@/services/clients/clientService';
 import { type ICliente } from '@/services/clients/interfacesClientes';
@@ -13,6 +13,8 @@ const props = defineProps<{
 
 const cargando = ref(false)
 const clientes = ref<ICliente[]>([]) // Para llenar el select de clientes
+
+const { submitTask } = useTasks() // Usamos el composable para manejar tareas
 
 const form = ref<ITareaCreate>({
     titulo: '',
@@ -57,6 +59,7 @@ onMounted(async () => {
     }
 })
 
+/*
 const submitTarea = async () => {
     if (!form.value.titulo.trim()) return
     
@@ -81,6 +84,31 @@ const submitTarea = async () => {
         cargando.value = false
     }
 }
+*/
+
+const submitTarea = async () => {
+    if (!form.value.titulo.trim()) return
+    
+    // Validación extra: si es de cliente, debe tener un ID
+    if (form.value.tipo === 'cliente' && !form.value.cliente_id) {
+        alert("Por favor, selecciona un cliente.")
+        return
+    }
+
+    cargando.value = true
+    try {
+        const tareaGuardada = props.tareaAEditar 
+            ? await submitTask(form.value, props.tareaAEditar.id!)
+            : await submitTask(form.value, null)
+
+        emit('tareaCreada', tareaGuardada) // Enviamos la tarea creada/actualizada al padre
+        emit('close') // Cerramos el modal
+    } catch (error) {
+        console.log("Hubo un error al guardar la tarea", error)
+    } finally {
+        cargando.value = false
+    }
+}
 
 </script>
 
@@ -90,7 +118,7 @@ const submitTarea = async () => {
         <div class="bg-sidebar w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-fade-in-up transition-colors duration-300">
             
             <div class="px-6 py-4 border-b border-border-main flex justify-between items-center bg-bg-hover transition-colors">
-                <h3 class="text-lg font-bold text-text-main">Agregar nueva tarea</h3>
+                <h3 class="text-lg font-bold text-text-main">{{ props.tareaAEditar ? 'Editar Tarea' : 'Agregar nueva tarea' }}</h3>
                 <button @click="emit('close')" class="text-text-muted hover:text-text-main transition-colors">
                     ✕
                 </button>

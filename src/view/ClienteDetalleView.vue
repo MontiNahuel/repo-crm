@@ -2,15 +2,31 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import PanelContenedor from '@/components/ui/PanelContenedor.vue';
+import ListaTareas from '@/components/tasks/ListaTareas.vue';
+import { useTasks } from '@/composables/useTasks';
+import { useTaskModals } from '@/composables/useTasksModal';
 import { type ICliente } from '@/services/clients/interfacesClientes';
+import { type Tarea } from '@/services/tareas/interfacesTareas';
 import { clientService } from '@/services/clients/clientService';
+import PaginadorComponent from '@/components/ui/PaginadorComponent.vue';
+
+// --- Modales ---
+import ModalConfirmacion from '@/components/modals/ModalConfirmacion.vue';
+import CrearTareaModal from '@/components/modals/CrearTareaModal.vue'
 
 const route = useRoute();
 const router = useRouter();
+const paginaActual = ref(1)
+const limit = 7
+const masTareas = ref(true)
+const { loadTasksByClient, toggleCompletada } = useTasks();
 
 
 const cliente = ref<ICliente | null>(null);
 const cargando = ref(true);
+const cargandoTareas = ref(true);
+
+const tareasCliente = ref<Tarea[]>([]);
 
 const cargarDetalleCliente = async () => {
     cargando.value = true;
@@ -31,8 +47,53 @@ const cargarDetalleCliente = async () => {
     }
 }
 
-onMounted(() => {
-    cargarDetalleCliente();
+const cargarTareasCliente = async () => {
+    if (!cliente.value) return;
+    try {
+        cargandoTareas.value = true;
+        const skip = (paginaActual.value - 1) * limit
+        tareasCliente.value = await loadTasksByClient(cliente.value.id, skip, limit, true);
+        masTareas.value = tareasCliente.value.length === limit
+        cargandoTareas.value = false;
+    } catch (error) {
+        console.error("Error al cargar tareas del cliente", error);
+        cargandoTareas.value = false;
+    }
+}
+
+const toggleTarea = async (tarea: Tarea) => {
+    await toggleCompletada(tarea);
+    if (tarea.esta_completada) {
+        setTimeout(async () => {
+            await cargarTareasCliente()
+        }, 400);
+    }
+}
+
+const modales = useTaskModals(async () => {
+    // Si borramos el último ítem de la página, retrocedemos
+    if (tareasCliente.value.length === 1 && paginaActual.value > 1) {
+        paginaActual.value--;
+    }
+    await cargarTareasCliente();
+});
+
+// Botones de Navegacion
+const paginaAnterior = async () => {
+    if (paginaActual.value === 1) return
+    paginaActual.value--
+    await cargarTareasCliente()
+}
+
+const paginaSiguiente = async () => {
+    if (!masTareas.value) return
+    paginaActual.value++
+    await cargarTareasCliente()
+}
+
+onMounted(async () => {
+    await cargarDetalleCliente();
+    cargarTareasCliente();
 });
 </script>
 
@@ -100,15 +161,28 @@ onMounted(() => {
                 <PanelContenedor>
                     <div class="p-6 border-b border-border-main flex justify-between items-center transition-colors">
                         <h3 class="text-lg font-bold text-text-main">Tareas Pendientes</h3>
-                        <button class="text-sm text-blue-500 font-semibold hover:text-blue-400 transition-colors">
+                        <button @click="modales.abrirModalCrear" class="text-sm text-blue-500 font-semibold hover:text-blue-400 transition-colors">
                             + Nueva Tarea
                         </button>
                     </div>
                     
-                    <div class="p-6 text-center text-text-muted">
-                        <div class="text-4xl mb-3">📋</div>
-                        <p>No hay tareas asignadas a este cliente todavía.</p>
-                    </div>
+                    <ListaTareas 
+                        :tareas="tareasCliente" 
+                        :cargando="cargandoTareas"
+                        @toggle="toggleTarea"
+                        @eliminar="modales.intentarEliminar"
+                        @editar="modales.abrirModalEditar"
+                    />
+
+                    <PaginadorComponent
+                        :pagina-actual="paginaActual"
+                        :cargando="cargando"
+                        :deshabilitar-anterior="paginaActual === 1"
+                        :deshabilitar-siguiente="!masTareas"
+                        @anterior="paginaAnterior"
+                        @siguiente="paginaSiguiente"
+                    />
+
                 </PanelContenedor>
 
                 <PanelContenedor>
@@ -120,7 +194,24 @@ onMounted(() => {
                     </div>
                 </PanelContenedor>
             </div>
-
         </div>
+        <Teleport to="body">
+            <ModalConfirmacion 
+                v-if="modales.mostrarModalEliminar.value" 
+                titulo="Eliminar tarea" 
+                mensaje="¿Estás seguro de que querés eliminar esta tarea del To-Do?" 
+                textoConfirmar="Sí, eliminar" 
+                :cargando="modales.eliminando.value" 
+                @confirmar="modales.confirmarEliminacion" 
+                @cancelar="modales.cancelarEliminacion" 
+            />
+            
+            <CrearTareaModal 
+                v-if="modales.mostrarModalCrearEditar.value" 
+                :tareaAEditar="modales.tareaSeleccionada.value" 
+                @close="modales.cerrarModalCrearEditar(false)" 
+                @tarea-creada="modales.cerrarModalCrearEditar(true)" 
+            />
+        </Teleport>
     </div>
 </template>

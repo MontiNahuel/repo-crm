@@ -25,7 +25,7 @@ export const tareaService = {
         }
     },
 
-    async crearTarea(tarea : ITareaCreate) {
+    async crearTarea(tarea: ITareaCreate) {
         try {
             if (tarea.tipo === 'personal' && tarea.cliente_id) {
                 throw new Error("Si el tipo es 'personal', cliente_id no debe estar presente")
@@ -33,7 +33,7 @@ export const tareaService = {
             if (tarea.tipo === 'cliente' && !tarea.cliente_id) {
                 throw new Error("Si el tipo es 'cliente', cliente_id es obligatorio")
             }
-            
+
             if (tarea.tipo === 'cliente' && tarea.cliente_id) {
                 const { data } = await api.post('/tareas/cliente', {
                     titulo: tarea.titulo,
@@ -72,6 +72,18 @@ export const tareaService = {
             return data
         } catch (error) {
             console.error('Error al actualizar la tarea:', error)
+            throw error
+        }
+    },
+
+    async getTareasByCliente(clienteId: number, skip: number = 0, limit: number = 10, pendientes_solo: boolean = false) {
+        try {
+            const { data } = await api.get(`/tareas/cliente/${clienteId}`, {
+                params: { skip, limit, pendientes_solo }
+            })
+            return data
+        } catch (error) {
+            console.error('Error al cargar tareas del cliente:', error)
             throw error
         }
     }
