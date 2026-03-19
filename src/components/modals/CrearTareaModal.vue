@@ -9,6 +9,7 @@ const emit = defineEmits(['close', 'tareaCreada'])
 
 const props = defineProps<{
     tareaAEditar?: Tarea | null // Idealmente usá tu interfaz Tarea aquí
+    valoresIniciales?: Partial<ITareaCreate>;
 }>()
 
 const cargando = ref(false)
@@ -34,7 +35,7 @@ const resetForm = () => {
 
 watch(() => props.tareaAEditar, (nuevaTarea) => {
     if (nuevaTarea) {
-        // Si hay una tarea, llenamos los campos para EDITAR
+        // --- MODO EDICIÓN ---
         form.value = {
             titulo: nuevaTarea.titulo,
             tipo: nuevaTarea.tipo,
@@ -42,12 +43,20 @@ watch(() => props.tareaAEditar, (nuevaTarea) => {
             fecha_limite: nuevaTarea.fecha_limite 
                 ? String(nuevaTarea.fecha_limite).slice(0, 16) 
                 : null
-        }
+        };
     } else {
-        // Si viene null o undefined, vaciamos para CREAR
-        resetForm()
+        // --- MODO CREACIÓN ---
+        resetForm(); // Primero limpiamos todo por las dudas
+        
+        // Y ACÁ ESTÁ LA MAGIA: Si nos pasaron valores por defecto, los aplicamos
+        if (props.valoresIniciales) {
+            form.value = { 
+                ...form.value,           
+                ...props.valoresIniciales 
+            };
+        }
     }
-}, { immediate: true }) // immediate: true hace que se ejecute ni bien se renderiza
+}, { immediate: true });
 
 onMounted(async () => {
     try {
@@ -135,15 +144,15 @@ const submitTarea = async () => {
 
                 <div>
                     <label class="block text-sm font-semibold text-text-main mb-2 transition-colors">Tipo de Tarea</label>
-                    <div class="flex p-1 bg-bg-main border border-border-main rounded-lg transition-colors" :class="{ 'opacity-60 cursor-not-allowed': tareaAEditar }">
+                    <div class="flex p-1 bg-bg-main border border-border-main rounded-lg transition-colors" :class="{ 'opacity-60 cursor-not-allowed': tareaAEditar || props.valoresIniciales?.tipo }">
                         <label class="flex-1 text-center" :class="{ 'cursor-pointer': !tareaAEditar, 'cursor-not-allowed': tareaAEditar }">
-                            <input type="radio" v-model="form.tipo" value="personal" class="peer hidden" :disabled="!!tareaAEditar">
+                            <input type="radio" v-model="form.tipo" value="personal" class="peer hidden" :disabled="!!tareaAEditar || !!props.valoresIniciales?.tipo">
                             <div class="py-1.5 text-sm font-medium rounded-md text-text-muted peer-checked:bg-sidebar peer-checked:text-blue-500 peer-checked:shadow-sm transition-all">
                                 ⚡ Personal
                             </div>
                         </label>
                         <label class="flex-1 text-center" :class="{ 'cursor-pointer': !tareaAEditar, 'cursor-not-allowed': tareaAEditar }">
-                            <input type="radio" v-model="form.tipo" value="cliente" class="peer hidden" :disabled="!!tareaAEditar">
+                            <input type="radio" v-model="form.tipo" value="cliente" class="peer hidden" :disabled="!!tareaAEditar || !!props.valoresIniciales?.tipo">
                             <div class="py-1.5 text-sm font-medium rounded-md text-text-muted peer-checked:bg-sidebar peer-checked:text-blue-500 peer-checked:shadow-sm transition-all">
                                 👤 De Cliente
                             </div>
@@ -164,8 +173,9 @@ const submitTarea = async () => {
 
                 <div v-if="form.tipo === 'cliente'" class="animate-fade-in">
                     <label class="block text-sm font-semibold text-text-main mb-1 transition-colors">Seleccionar Cliente</label>
-                    <select v-model="form.cliente_id" :disabled="!!tareaAEditar" required
-                            class="w-full px-4 py-2 rounded-xl border border-border-main bg-bg-main text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition-colors">
+                    <select v-model="form.cliente_id" :disabled="!!tareaAEditar || !!props.valoresIniciales?.cliente_id" required
+                            class="w-full px-4 py-2 rounded-xl border border-border-main bg-bg-main text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
+                            :class="{ 'opacity-60 cursor-not-allowed': tareaAEditar || props.valoresIniciales?.tipo }">
                         <option :value="null" disabled class="text-text-muted">Elegí un cliente...</option>
                         <option v-for="cliente in clientes" :key="cliente.id" :value="cliente.id">
                             {{ cliente.nombre }}

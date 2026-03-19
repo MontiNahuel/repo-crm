@@ -161,7 +161,7 @@ onMounted(async () => {
                 <PanelContenedor>
                     <div class="p-6 border-b border-border-main flex justify-between items-center transition-colors">
                         <h3 class="text-lg font-bold text-text-main">Tareas Pendientes</h3>
-                        <button @click="modales.abrirModalCrear" class="text-sm text-blue-500 font-semibold hover:text-blue-400 transition-colors">
+                        <button @click="modales.abrirModalCrear({ tipo: 'cliente', cliente_id: Number(route.params.id) })" class="text-sm text-blue-500 font-semibold hover:text-blue-400 transition-colors">
                             + Nueva Tarea
                         </button>
                     </div>
@@ -209,6 +209,7 @@ onMounted(async () => {
             <CrearTareaModal 
                 v-if="modales.mostrarModalCrearEditar.value" 
                 :tareaAEditar="modales.tareaSeleccionada.value" 
+                :valoresIniciales="modales.valoresPorDefecto.value"
                 @close="modales.cerrarModalCrearEditar(false)" 
                 @tarea-creada="modales.cerrarModalCrearEditar(true)" 
             />

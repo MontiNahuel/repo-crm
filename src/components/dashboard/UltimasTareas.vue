@@ -62,7 +62,7 @@ socket.on('tareas_actualizadas', () => {
                 <span class="text-blue-500">✅</span> Mis Tareas
             </h3>
             <button 
-            @click="modales.abrirModalCrear"
+            @click="modales.abrirModalCrear()"
             class="text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition">
                 + Nueva
             </button>

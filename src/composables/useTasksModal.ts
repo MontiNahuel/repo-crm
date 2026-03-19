@@ -1,11 +1,12 @@
 import { ref } from 'vue';
-import { type Tarea } from '@/services/tareas/interfacesTareas';
+import { type Tarea, type ITareaCreate } from '@/services/tareas/interfacesTareas';
 import { useTasks } from '@/composables/useTasks';
 
 // Recibe la función que querés ejecutar cuando termine una acción exitosa (ej: cargarTareas)
 export function useTaskModals(onSuccessCallback: () => Promise<void> | void) {
 
     const { eliminarTarea } = useTasks();
+    const valoresPorDefecto = ref<Partial<ITareaCreate>>({});
 
     // Estados
     const mostrarModalCrearEditar = ref(false);
@@ -15,8 +16,9 @@ export function useTaskModals(onSuccessCallback: () => Promise<void> | void) {
     const eliminando = ref(false);
 
     // --- LÓGICA DE CREAR / EDITAR ---
-    const abrirModalCrear = () => {
+    const abrirModalCrear = (valoresIniciales: Partial<ITareaCreate> = {}) => {
         tareaSeleccionada.value = null;
+        valoresPorDefecto.value = valoresIniciales;
         mostrarModalCrearEditar.value = true;
     };
 
@@ -28,6 +30,7 @@ export function useTaskModals(onSuccessCallback: () => Promise<void> | void) {
     const cerrarModalCrearEditar = (recargar: boolean = false) => {
         mostrarModalCrearEditar.value = false;
         tareaSeleccionada.value = null;
+        valoresPorDefecto.value = {};
         if (recargar) {
             setTimeout(async () => {
                 await onSuccessCallback();
@@ -68,6 +71,7 @@ export function useTaskModals(onSuccessCallback: () => Promise<void> | void) {
         mostrarModalEliminar,
         tareaSeleccionada,
         eliminando,
+        valoresPorDefecto,
         // Exponemos las acciones
         abrirModalCrear,
         abrirModalEditar,
