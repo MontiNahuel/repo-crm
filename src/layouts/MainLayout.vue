@@ -1,5 +1,24 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import SidebarComponent from '@/components/navegacion/SidebarComponent.vue'
+
+
+const route = useRoute()
+const router = useRouter()
+
+const tituloRuta = computed(() => {
+    return route.meta.title || route.name || 'Dashboard'
+})
+
+// 2. Control del botón Atrás: Solo se muestra si la ruta actual dice que lo necesita en su 'meta'
+const mostrarBotonAtras = computed(() => {
+    return !!route.meta.showBack
+})
+
+const irAtras = () => {
+    router.back()
+}
 </script>
 
 <template>
@@ -10,10 +29,25 @@ import SidebarComponent from '@/components/navegacion/SidebarComponent.vue'
     <main class="flex-1 flex flex-col h-screen overflow-hidden">
       
       <header class="h-16 bg-sidebar border-b border-border-main flex items-center justify-between px-8 transition-colors duration-300 shadow-sm">
-        
-        <h2 class="text-xl font-bold text-text-main capitalize">
-          {{ $route.name || 'Dashboard' }}
-        </h2>
+
+        <div class="flex items-center gap-4">
+            
+            <button 
+                v-if="mostrarBotonAtras"
+                @click="irAtras"
+                class="p-2 text-text-muted hover:bg-bg-hover hover:text-text-main rounded-full transition-colors"
+                title="Volver"
+            >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </button>
+
+            <h2 class="text-xl font-bold text-text-main capitalize">
+                {{ tituloRuta }}
+            </h2>
+            
+        </div>
 
         <div class="flex items-center gap-4">
             <button class="p-2 text-text-muted hover:bg-bg-hover rounded-full transition-colors">

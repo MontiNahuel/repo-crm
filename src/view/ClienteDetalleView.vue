@@ -9,6 +9,7 @@ import { type ICliente } from '@/services/clients/interfacesClientes';
 import { type Tarea } from '@/services/tareas/interfacesTareas';
 import { clientService } from '@/services/clients/clientService';
 import PaginadorComponent from '@/components/ui/PaginadorComponent.vue';
+import NotasCliente from '@/components/viewClientes/NotasCliente.vue';
 
 // --- Modales ---
 import ModalConfirmacion from '@/components/modals/ModalConfirmacion.vue';
@@ -17,7 +18,7 @@ import CrearTareaModal from '@/components/modals/CrearTareaModal.vue'
 const route = useRoute();
 const router = useRouter();
 const paginaActual = ref(1)
-const limit = 7
+const limit = 3
 const masTareas = ref(true)
 const { loadTasksByClient, toggleCompletada } = useTasks();
 
@@ -25,6 +26,7 @@ const { loadTasksByClient, toggleCompletada } = useTasks();
 const cliente = ref<ICliente | null>(null);
 const cargando = ref(true);
 const cargandoTareas = ref(true);
+const cambiandoEstado = ref(false);
 
 const tareasCliente = ref<Tarea[]>([]);
 
@@ -78,6 +80,27 @@ const modales = useTaskModals(async () => {
     await cargarTareasCliente();
 });
 
+const actualizarEstadoDelCliente = async () => {
+    if (!cliente.value) return;
+
+    // Guardamos el estado anterior por si la API falla y tenemos que revertir el cambio
+    const estadoAnterior = cliente.value.estado; 
+    
+    try {
+        cambiandoEstado.value = true;
+        
+        // Asumo que tu servicio tiene una función así:
+        // await clienteService.actualizarEstado(cliente.value.id, cliente.value.estado);
+    } catch (error) {
+        console.error("Error al actualizar estado:", error);
+        
+        // Si falló, volvemos a poner el select como estaba antes visualmente
+        cliente.value.estado = estadoAnterior; 
+    } finally {
+        cambiandoEstado.value = false;
+    }
+};
+
 // Botones de Navegacion
 const paginaAnterior = async () => {
     if (paginaActual.value === 1) return
@@ -100,6 +123,7 @@ onMounted(async () => {
 <template>
     <div class="space-y-6 animate-fade-in max-w-6xl mx-auto p-4 md:p-0">
         
+        <!--
         <div class="flex items-center gap-4 mb-2">
             <button @click="router.push('/clientes')" class="p-2 hover:bg-bg-hover rounded-lg text-text-muted transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -108,6 +132,7 @@ onMounted(async () => {
                 <h1 class="text-2xl font-bold text-text-main transition-colors">Perfil del Cliente</h1>
             </div>
         </div>
+        -->
 
         <div v-if="cargando" class="flex justify-center p-12">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
@@ -123,14 +148,29 @@ onMounted(async () => {
                         </div>
                         <h2 class="text-xl font-bold text-text-main mb-1">{{ cliente.nombre }}</h2>
                         
-                        <span :class="{
-                            'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': cliente.estado === 'ACTIVO',
-                            'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400': cliente.estado === 'LEAD',
-                            'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': cliente.estado === 'INACTIVO',
-                            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': cliente.estado === 'PERDIDO'
-                        }" class="px-3 py-1 rounded-md text-xs font-bold mt-2">
-                            {{ cliente.estado }}
-                        </span>
+                        <div class="relative mt-2 inline-block">
+                        <select 
+                            v-model="cliente.estado" 
+                            @change="actualizarEstadoDelCliente"
+                            :disabled="cambiandoEstado"
+                            :class="{
+                                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': cliente.estado === 'ACTIVO',
+                                'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400': cliente.estado === 'LEAD',
+                                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': cliente.estado === 'INACTIVO',
+                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': cliente.estado === 'PERDIDO'
+                            }" 
+                            class="appearance-none cursor-pointer pl-3 pr-8 py-1 rounded-md text-xs font-bold border border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <option value="LEAD" class="bg-bg-main text-text-main">LEAD</option>
+                            <option value="ACTIVO" class="bg-bg-main text-text-main">ACTIVO</option>
+                            <option value="INACTIVO" class="bg-bg-main text-text-main">INACTIVO</option>
+                            <option value="PERDIDO" class="bg-bg-main text-text-main">PERDIDO</option>
+                        </select>
+                        
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-current opacity-70">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
                     </div>
 
                     <div class="p-6 space-y-4">
@@ -186,12 +226,9 @@ onMounted(async () => {
                 </PanelContenedor>
 
                 <PanelContenedor>
-                    <div class="p-6 border-b border-border-main transition-colors">
-                        <h3 class="text-lg font-bold text-text-main">Historial de Notas</h3>
-                    </div>
-                    <div class="p-6 text-center text-text-muted">
-                        <p class="text-sm">Próximamente: Registro de llamadas y reuniones.</p>
-                    </div>
+                    <NotasCliente
+                        :cliente-id="cliente.id"
+                    />
                 </PanelContenedor>
             </div>
         </div>

@@ -20,7 +20,7 @@ const router = createRouter({
           path: '/login',
           name: 'login',
           component: LoginView,
-          meta: { requiresGuest: true, hideSidebar: true }
+          meta: { requiresGuest: true, hideSidebar: true, title: 'Login' }
         }]
     },
     {
@@ -35,31 +35,35 @@ const router = createRouter({
           path: '/dashboard', // Es la ruta raíz /
           name: 'dashboard',
           component: DashboardView,
-          meta: { requiresAuth: true }
+          meta: { requiresAuth: true, title: 'Dashboard' }
         },
         {
           path: '/clientes', // Es /clientes
           name: 'clientes',
           component: ClientesView,
-          meta: { requiresAuth: true }
+          meta: { requiresAuth: true, title: 'Clientes' }
         },
         {
           path: '/todo', // Es /todo
           name: 'todo',
           component: TodoView,
-          meta: { requiresAuth: true }
+          meta: { requiresAuth: true, title: 'Tareas' }
         },
         {
           path: '/admin', // Es /admin
           name: 'admin',
           component: panelAdmin,
-          meta: { requiresAuth: true, requiresAdmin: true }
+          meta: { requiresAuth: true, requiresAdmin: true, title: 'Administrador' }
         },
         {
           path: '/clientes/:id', // El :id es dinámico
           name: 'cliente-detalle',
           component: () => import('@/view/ClienteDetalleView.vue'), // Lazy loading para que sea rápido
-          meta: { requiresAuth: true }
+          meta: {
+            requiresAuth: true,
+            showBack: true,
+            title: 'Perfil del Cliente'
+          }
         }
       ]
     }
@@ -85,5 +89,10 @@ router.beforeEach((to, from, next) => {
     next() // Pasá tranquilo
   }
 });
+
+router.afterEach((to) => {
+  // Cambiá "Mi CRM" por el nombre de tu sistema
+  document.title = `${to.meta.title || 'App'} | Mi CRM`
+})
 
 export default router

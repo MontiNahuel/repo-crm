@@ -2,7 +2,7 @@
 import { onMounted } from 'vue'
 import ActividadReciente from '@/components/dashboard/ActividadReciente.vue'
 import KpisDashboard from '@/components/dashboard/KpisDashboard.vue'
-import ClientesTotales from '@/components/dashboard/ClientesTotales.vue'
+//import ClientesTotales from '@/components/dashboard/ClientesTotales.vue'
 import UltimasTareas from '@/components/dashboard/UltimasTareas.vue'
 import { useSocket } from '@/composables/useSocket'
 
@@ -32,7 +32,9 @@ onMounted(() => {
             -->
         </div>
 
+        <!---
         <ClientesTotales />
+        -->
 
         <KpisDashboard />
 

@@ -88,7 +88,7 @@ onMounted(async () => {
                 <h1 class="text-2xl font-bold text-text-main transition-colors">Mi To-Do List</h1>
                 <p class="text-sm text-text-muted mt-1 transition-colors">Gestioná tus pendientes y organizá tu día.</p>
             </div>
-            <button @click="modales.abrirModalCrear" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm dark:shadow-none">
+            <button @click="modales.abrirModalCrear()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm dark:shadow-none">
                 + Nueva Tarea
             </button>
         </div>
