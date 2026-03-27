@@ -11,11 +11,14 @@
 
 ## ✨ Características Principales
 
-* **Arquitectura Modular:** Separación estricta de responsabilidades utilizando *Servicios* (para llamadas a la API) y *Composables* (para la lógica de negocio y manejo del estado de Vue).
-* **Edición en Línea (Inline Editing):** Actualización de estados de clientes y tareas sin necesidad de recargar la página ni abrir modales innecesarios.
-* **Navegación Inteligente:** Layout centralizado que reacciona dinámicamente a la ruta actual para mostrar botones de retroceso, títulos y menús contextuales.
-* **Historial de Notas:** Timeline de interacciones por cliente con soporte de saltos de línea y scroll encapsulado.
-* **Gestión de Tareas:** Sistema To-Do integrado al perfil de cada cliente con paginación optimizada.
+* **Manejo de cartera de Clientes:** Permite registrar clientes los cuales contienen un estado en el que se encuentran (activo, inactivo, perdido, etc.), y un registro de datos de contacto.
+* **Registro de tareas (tasks):** Permitiendo registrar tareas asociadas al trabajador propio que usa el sistema o a un cliente determinado, estas mismas están integradas con el flujo de la aplicación, mostrandose en puntos claves. Ej: Junto al perfil detallado del cliente.
+* **Manejo de Notas:** Notas de rápida escritura por si se tiene que anotar algo en clave, como por ejemplo en una reunión.
+* **Integración con IA:** Se utiliza la IA para puntos de interés clave, como por ejemplo analizar las notas rápidas escritas, delegandolas en tareas asignadas a ese cliente, todo este proceso automatizado.
+* **Gestión de KPIs:** Medidores clave para cualquier vendedor, dentro de la pantalla inicial para saber en que estado se encuentra.
+* **Manejo de una cartera de productos (en construcción):** Se permite un manejo de productos, los cuales estarán asociados a un cliente, para un mayor seguimiento de este mismo.
+* **Manejo de roles permitiendo grupos de vendedores (en construcción):** Permitir grupos de vendedores es una ventaja estratégica, así el compartir información necesaria entre grupos de ventas se hace de forma instantanea.
+* **Creación de facturas en base al cliente y el/los productos asociados (en construcción):** Generar datos de tipo venta es obligatorio para extender el sistema en el futuro hacia una parte contable. Ej: Rendimiento mensual.
 
 ## 📂 Estructura del Proyecto
 

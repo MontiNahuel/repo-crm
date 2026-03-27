@@ -10,10 +10,14 @@ import { type Tarea } from '@/services/tareas/interfacesTareas';
 import { clientService } from '@/services/clients/clientService';
 import PaginadorComponent from '@/components/ui/PaginadorComponent.vue';
 import NotasCliente from '@/components/viewClientes/NotasCliente.vue';
+import StatusSelector from '@/components/ui/StatusSelector.vue';
+import { useClients } from '@/composables/useClients';
+import type { ClientStatus } from '@/consts/clientStatuses';
 
 // --- Modales ---
 import ModalConfirmacion from '@/components/modals/ModalConfirmacion.vue';
-import CrearTareaModal from '@/components/modals/CrearTareaModal.vue'
+import CrearTareaModal from '@/components/modals/CrearTareaModal.vue';
+import ModalTareasIA from '@/components/modals/ModalTareasIA.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -21,12 +25,11 @@ const paginaActual = ref(1)
 const limit = 3
 const masTareas = ref(true)
 const { loadTasksByClient, toggleCompletada } = useTasks();
-
+const { cambiarEstadoDelCliente, cambiandoEstado } = useClients();
 
 const cliente = ref<ICliente | null>(null);
 const cargando = ref(true);
 const cargandoTareas = ref(true);
-const cambiandoEstado = ref(false);
 
 const tareasCliente = ref<Tarea[]>([]);
 
@@ -80,25 +83,10 @@ const modales = useTaskModals(async () => {
     await cargarTareasCliente();
 });
 
-const actualizarEstadoDelCliente = async () => {
-    if (!cliente.value) return;
-
-    // Guardamos el estado anterior por si la API falla y tenemos que revertir el cambio
-    const estadoAnterior = cliente.value.estado; 
-    
-    try {
-        cambiandoEstado.value = true;
-        
-        // Asumo que tu servicio tiene una función así:
-        // await clienteService.actualizarEstado(cliente.value.id, cliente.value.estado);
-    } catch (error) {
-        console.error("Error al actualizar estado:", error);
-        
-        // Si falló, volvemos a poner el select como estaba antes visualmente
-        cliente.value.estado = estadoAnterior; 
-    } finally {
-        cambiandoEstado.value = false;
-    }
+const actualizarEstadoDelCliente = async (nuevoEstado: ClientStatus) => {
+    // Solo pasamos el objeto y el nuevo valor. 
+    // El composable se encarga del resto.
+    await cambiarEstadoDelCliente(cliente.value!, nuevoEstado, cliente.value!.estado);
 };
 
 // Botones de Navegacion
@@ -149,27 +137,11 @@ onMounted(async () => {
                         <h2 class="text-xl font-bold text-text-main mb-1">{{ cliente.nombre }}</h2>
                         
                         <div class="relative mt-2 inline-block">
-                        <select 
-                            v-model="cliente.estado" 
-                            @change="actualizarEstadoDelCliente"
+                        <StatusSelector 
+                            :model-value="cliente.estado" 
                             :disabled="cambiandoEstado"
-                            :class="{
-                                'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': cliente.estado === 'ACTIVO',
-                                'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400': cliente.estado === 'LEAD',
-                                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': cliente.estado === 'INACTIVO',
-                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': cliente.estado === 'PERDIDO'
-                            }" 
-                            class="appearance-none cursor-pointer pl-3 pr-8 py-1 rounded-md text-xs font-bold border border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <option value="LEAD" class="bg-bg-main text-text-main">LEAD</option>
-                            <option value="ACTIVO" class="bg-bg-main text-text-main">ACTIVO</option>
-                            <option value="INACTIVO" class="bg-bg-main text-text-main">INACTIVO</option>
-                            <option value="PERDIDO" class="bg-bg-main text-text-main">PERDIDO</option>
-                        </select>
-                        
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-current opacity-70">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path></svg>
-                        </div>
+                            @change="actualizarEstadoDelCliente" 
+                        />
                     </div>
                     </div>
 
@@ -228,6 +200,7 @@ onMounted(async () => {
                 <PanelContenedor>
                     <NotasCliente
                         :cliente-id="cliente.id"
+                        @tareas-extraidas="modales.abrirModalTareasPorIA"
                     />
                 </PanelContenedor>
             </div>
@@ -249,6 +222,13 @@ onMounted(async () => {
                 :valoresIniciales="modales.valoresPorDefecto.value"
                 @close="modales.cerrarModalCrearEditar(false)" 
                 @tarea-creada="modales.cerrarModalCrearEditar(true)" 
+            />
+
+            <ModalTareasIA 
+                v-if="modales.mostrarModalIA.value" 
+                :tareas="modales.tareasRecientesIA.value" 
+                @close="modales.cerrarModalTareasPorIA(true)" 
+                @borrar-tarea="modales.descartarTareaIA" 
             />
         </Teleport>
     </div>

@@ -1,5 +1,6 @@
 import api from "@/api/axios";
 import type { IPaginacionClientes, IParamsForClientesPaginados, IClienteCreacion } from "./interfacesClientes";
+import type { ClientStatus } from "@/consts/clientStatuses";
 
 export const clientService = {
     async getClients() {
@@ -32,11 +33,17 @@ export const clientService = {
         return this.getClientsByUser();
     },
 
-    async getClientesPaginadosPorUsuario(skip: number = 0, limit: number = 10, busqueda: string = ''): Promise<IPaginacionClientes> {
+    async getClientesPaginadosPorUsuario(skip: number = 0, limit: number = 10, busqueda: string = '', filtroEstado: ClientStatus | "" = "", orden: string): Promise<IPaginacionClientes> {
         try {
             const params: IParamsForClientesPaginados = { skip, limit };
             if (busqueda) {
                 params.busqueda = busqueda;
+            }
+            if (filtroEstado) {
+                params.filtroEstado = filtroEstado;
+            }
+            if (orden) {
+                params.orden = orden;
             }
             const { data } = await api.get('/clientes/mis-clientes', {
                 params

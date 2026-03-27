@@ -24,4 +24,24 @@ export const noteService = {
             throw error;
         }
     },
+
+    async analizeNoteWithIA(noteId: number) {
+        try {
+            const response = await api.post(`/notas/analizar-tarea/${noteId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error analizing notes: ', error);
+            throw error;
+        }
+    },
+
+    async deleteNote(noteId: number) {
+        try {
+            const response = await api.delete(`/notas/${noteId}`);
+            return response.data
+        } catch (error) {
+            console.error('Error deleting notes: ', error);
+            throw error;
+        }
+    },
 }

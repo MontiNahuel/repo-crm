@@ -14,6 +14,8 @@ export function useTaskModals(onSuccessCallback: () => Promise<void> | void) {
     const tareaSeleccionada = ref<Tarea | null>(null);
     const tareaAEliminar = ref<number | null>(null);
     const eliminando = ref(false);
+    const mostrarModalIA = ref(false);
+    const tareasRecientesIA = ref<Tarea[]>([]);
 
     // --- LÓGICA DE CREAR / EDITAR ---
     const abrirModalCrear = (valoresIniciales: Partial<ITareaCreate> = {}) => {
@@ -65,6 +67,41 @@ export function useTaskModals(onSuccessCallback: () => Promise<void> | void) {
         eliminando.value = false;
     };
 
+    // --- LÓGICA DE IA ---
+    const abrirModalTareasPorIA = (tareas: Tarea[]) => {
+        tareasRecientesIA.value = tareas;
+        mostrarModalIA.value = true;
+    };
+
+    // AGREGADO: Opción para recargar la lista general al cerrar el modal
+    const cerrarModalTareasPorIA = (recargar: boolean = false) => {
+        mostrarModalIA.value = false;
+        tareasRecientesIA.value = [];
+        if (recargar) {
+            setTimeout(async () => {
+                await onSuccessCallback();
+            }, 300);
+        }
+    };
+
+    // NUEVO: Lógica para descartar una tarea específica desde el modal de IA
+    const descartarTareaIA = async (id: number) => {
+        // Le pegamos a la base de datos para borrarla de verdad
+        const exito = await eliminarTarea(id);
+
+        if (exito) {
+            // La sacamos visualmente del array del modal
+            tareasRecientesIA.value = tareasRecientesIA.value.filter(t => t.id !== id);
+
+            // Si el usuario borró todas las sugerencias, cerramos el modal automáticamente
+            if (tareasRecientesIA.value.length === 0) {
+                cerrarModalTareasPorIA(true);
+            }
+        } else {
+            console.error("No se pudo descartar la tarea de la IA");
+        }
+    };
+
     return {
         // Exponemos las variables
         mostrarModalCrearEditar,
@@ -72,12 +109,17 @@ export function useTaskModals(onSuccessCallback: () => Promise<void> | void) {
         tareaSeleccionada,
         eliminando,
         valoresPorDefecto,
+        mostrarModalIA,
+        tareasRecientesIA,
         // Exponemos las acciones
         abrirModalCrear,
         abrirModalEditar,
         cerrarModalCrearEditar,
         intentarEliminar,
         cancelarEliminacion,
-        confirmarEliminacion
+        confirmarEliminacion,
+        abrirModalTareasPorIA,
+        cerrarModalTareasPorIA,
+        descartarTareaIA
     };
 }

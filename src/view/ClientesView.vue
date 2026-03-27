@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { clientService } from '@/services/clients/clientService';
 import { type ICliente } from '@/services/clients/interfacesClientes';
+import { CLIENT_STATUS_CONFIG, type ClientStatus } from '@/consts/clientStatuses';
 
 import ModalNuevoCliente from '@/components/modals/ModalNuevoCliente.vue';
 import PaginadorComponent from '@/components/ui/PaginadorComponent.vue';
@@ -12,6 +13,8 @@ const clientes = ref<ICliente[]>([]);
 const cantidadTotalClientes = ref(0);
 const cargando = ref(false);
 const buscador = ref('');
+const filtroEstado = ref<ClientStatus | ''>('');
+const orden = ref('desc');
 
 const limite = 7;
 const skipActual = ref(0);
@@ -28,7 +31,13 @@ let timeoutBusqueda: ReturnType<typeof setTimeout> | null = null;
 const cargarClientes = async () => {
     cargando.value = true;
     try {
-        const respuesta = await clientService.getClientesPaginadosPorUsuario(skipActual.value, limite, buscador.value);
+        const respuesta = await clientService.getClientesPaginadosPorUsuario(
+            skipActual.value, 
+            limite, 
+            buscador.value,
+            filtroEstado.value,
+            orden.value
+        );
         clientes.value = respuesta.clientes;
         cantidadTotalClientes.value = respuesta.cantidadClientes;
     } catch (error) {
@@ -54,6 +63,12 @@ watch(buscador, (nuevoValor) => {
         
     }, 500); // 500ms es el "punto dulce" entre respuesta rápida y ahorro de recursos
 })
+
+// 2. Watcher instantáneo para los selectores
+watch([filtroEstado, orden], () => {
+    skipActual.value = 0;
+    cargarClientes();
+});
 
 const paginaSiguiente = () => {
     if (skipActual.value + limite < cantidadTotalClientes.value) {
@@ -101,11 +116,28 @@ onMounted(() => {
 
         <PanelContenedor>
             
-            <div class="p-4 border-b border-border-main bg-bg-main/50 flex gap-4 transition-colors">
-                <div class="relative flex-1 max-w-md">
+            <div class="p-4 border-b border-border-main bg-bg-main/50 flex flex-col lg:flex-row gap-4 transition-colors items-center justify-between">
+    
+                <div class="relative flex-1 w-full max-w-md">
                     <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     <input type="text" v-model="buscador" placeholder="Buscar por nombre, empresa o email..."
-                           class="w-full pl-10 pr-4 py-2 rounded-xl border border-border-main bg-sidebar text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition text-sm">
+                        class="w-full pl-10 pr-4 py-2 rounded-xl border border-border-main bg-sidebar text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition text-sm">
+                </div>
+
+                <div class="flex gap-3 w-full lg:w-auto">
+                    <select v-model="filtroEstado" class="flex-1 lg:flex-none px-4 py-2 rounded-xl border border-border-main bg-sidebar text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition text-sm appearance-none cursor-pointer">
+                        <option value="">Todos los estados</option>
+                        <option v-for="(config, key) in CLIENT_STATUS_CONFIG" :key="key" :value="key">
+                            {{ config.label }}
+                        </option>
+                    </select>
+
+                    <select v-model="orden" class="flex-1 lg:flex-none px-4 py-2 rounded-xl border border-border-main bg-sidebar text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition text-sm appearance-none cursor-pointer">
+                        <option value="desc">Más recientes</option>
+                        <option value="asc">Más antiguos</option>
+                        <option value="az">Nombre (A-Z)</option>
+                        <option value="za">Nombre (Z-A)</option>
+                    </select>
                 </div>
             </div>
 
@@ -141,13 +173,9 @@ onMounted(() => {
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <span :class="{
-                                    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': cliente.estado === 'ACTIVO',
-                                    'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400': cliente.estado === 'LEAD',
-                                    'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': cliente.estado === 'INACTIVO',
-                                    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': cliente.estado === 'PERDIDO'
-                                }" class="px-2.5 py-1 rounded-md text-xs font-bold transition-colors">
-                                    {{ cliente.estado }}
+                                <span :class="CLIENT_STATUS_CONFIG[cliente.estado]?.badgeClass" 
+                                    class="inline-block w-24 text-center px-3 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider transition-all">
+                                    {{ CLIENT_STATUS_CONFIG[cliente.estado]?.label || cliente.estado }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">

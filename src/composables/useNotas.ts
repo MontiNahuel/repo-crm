@@ -9,6 +9,7 @@ import { useToast } from '@/composables/useToast';
 
 
 export function useNotas() {
+
     const toast = useToast();
 
     const obtenerNotas = async (clienteId: number): Promise<INoteClient[]> => {
@@ -30,10 +31,35 @@ export function useNotas() {
             toast.error('Error al crear la nota del cliente.');
             return {}
         }
+    };
+
+    const analizeNote = async (noteId: number) => {
+        try {
+            const response = await noteService.analizeNoteWithIA(noteId);
+            toast.exito('Nota analizada correctamente')
+            return response;
+        } catch (error) {
+            toast.error('Error al analizar la nota del cliente.');
+            return {}
+        }
+    };
+
+    const deleteNote = async (noteId: number) => {
+        try {
+            const response = await noteService.deleteNote(noteId);
+            toast.exito('Nota eliminada correctamente')
+            return response;
+        } catch (error) {
+            toast.error('Error al eliminar la nota del cliente.');
+            return {}
+        }
     }
+
 
     return {
         obtenerNotas,
-        createNote
+        createNote,
+        analizeNote,
+        deleteNote
     };
 }
