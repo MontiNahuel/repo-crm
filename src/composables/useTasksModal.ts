@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { type Tarea, type ITareaCreate } from '@/services/tareas/interfacesTareas';
+import { type Tarea, type ITareaCreate } from '@/interfaces/interfacesTareas';
 import { useTasks } from '@/composables/useTasks';
 
 // Recibe la función que querés ejecutar cuando termine una acción exitosa (ej: cargarTareas)

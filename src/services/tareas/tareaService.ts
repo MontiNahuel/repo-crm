@@ -1,5 +1,5 @@
 import api from "@/api/axios";
-import { type ITareaCreate } from "./interfacesTareas";
+import { type ITareaCreate } from "../../interfaces/interfacesTareas";
 
 export const tareaService = {
     // Le pasamos limit = 5 por defecto porque es para el dashboard

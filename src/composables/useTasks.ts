@@ -1,6 +1,6 @@
 import { tareaService } from "@/services/tareas/tareaService";
 import { useToast } from "./useToast";
-import { type Tarea, type ITareaCreate } from "@/services/tareas/interfacesTareas";
+import { type Tarea, type ITareaCreate } from "@/interfaces/interfacesTareas";
 
 export function useTasks() {
 

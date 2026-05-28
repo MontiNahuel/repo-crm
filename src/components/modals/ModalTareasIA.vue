@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Tarea } from '@/services/tareas/interfacesTareas';
+import type { Tarea } from '@/interfaces/interfacesTareas';
 
 defineProps<{
     tareas: Tarea[];

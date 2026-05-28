@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import { useTasks } from '@/composables/useTasks';
-import { type ITareaCreate, type Tarea } from '@/services/tareas/interfacesTareas';
+import { type ITareaCreate, type Tarea } from '@/interfaces/interfacesTareas';
 import { clientService } from '@/services/clients/clientService';
 import { type ICliente } from '@/services/clients/interfacesClientes';
 
