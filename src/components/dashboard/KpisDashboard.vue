@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { statisticsService } from '@/services/statistics/statisticsService'
-import { type IKpisResponse } from '@/services/statistics/InterfacesStatistics'
+import { type IKpisResponse } from '@/interfaces/InterfacesStatistics'
 
 import KpiPipelineItem from './KpiPipelineItem.vue'
 

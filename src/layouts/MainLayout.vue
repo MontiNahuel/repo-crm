@@ -57,7 +57,7 @@ const irAtras = () => {
 
       </header>
 
-      <section class="flex-1 overflow-y-auto p-8 text-text-main">
+      <section :class="['flex-1 overflow-y-auto bg-bg-main', route.name !== 'chat-interno' ? 'p-8' : '']">
         <router-view />
       </section>
 

@@ -1,5 +1,5 @@
 import api from "@/api/axios";
-import { type IKpisResponse } from "./InterfacesStatistics";
+import { type IKpisResponse } from "../../interfaces/InterfacesStatistics";
 
 export const statisticsService = {
     async getKpis(): Promise<IKpisResponse> {

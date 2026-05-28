@@ -6,6 +6,8 @@ import DashboardView from '@/view/DashboardView.vue'
 import ClientesView from '@/view/ClientesView.vue'
 import panelAdmin from '@/view/admin/panelAdmin.vue'
 import TodoView from '@/view/TodoView.vue'
+import ChatInternoView from '@/view/ChatInternoView.vue'
+import ProductosView from '@/view/ProductosView.vue'
 
 import { useAuthStore } from '@/stores/authStore';
 
@@ -44,6 +46,12 @@ const router = createRouter({
           meta: { requiresAuth: true, title: 'Clientes' }
         },
         {
+          path: '/clientes/pipeline',
+          name: 'kanban',
+          component: () => import('@/view/KanbanView.vue'),
+          meta: { requiresAuth: true, title: 'Pipeline Kanban' }
+        },
+        {
           path: '/todo', // Es /todo
           name: 'todo',
           component: TodoView,
@@ -63,6 +71,24 @@ const router = createRouter({
             requiresAuth: true,
             showBack: true,
             title: 'Perfil del Cliente'
+          }
+        },
+        {
+          path: '/chat-interno',
+          name: 'chat-interno',
+          component: ChatInternoView,
+          meta: {
+            requiresAuth: true,
+            title: 'Chat Interno'
+          }
+        },
+        {
+          path: '/productos',
+          name: 'productos',
+          component: ProductosView,
+          meta: {
+            requiresAuth: true,
+            title: 'Productos'
           }
         }
       ]

@@ -20,8 +20,7 @@ const iniciarSesion = async () => {
     try {
       const data = await authService.login(email.value, password.value)
       console.log('Token:', data.access_token)
-      //localStorage.setItem('token', data.access_token)
-      authStore.setToken(data.access_token)
+      authStore.setTokens(data.access_token, data.refresh_token)
       router.push({name: 'dashboard'}) // Redirige al dashboard
       toast.info('Sesión iniciada correctamente')
 
