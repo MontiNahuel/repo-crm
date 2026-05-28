@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import type { INoteClient } from '@/interfaces/INote';
 import { useNotas } from '@/composables/useNotas';
 import NotaItem from './NotaItem.vue'; // Importamos el nuevo sub-componente
-import type { Tarea } from '@/services/tareas/interfacesTareas';
+import type { Tarea } from '@/interfaces/interfacesTareas';
 import { useConfirmacion } from '@/composables/useModalConfirmacionGenerico';
 import ModalConfirmacion from '@/components/modals/ModalConfirmacion.vue';
 

@@ -4,7 +4,7 @@ import { clientService } from '@/services/clients/clientService';
 import { type ICliente } from '@/services/clients/interfacesClientes';
 import { CLIENT_STATUS_CONFIG, type ClientStatus } from '@/consts/clientStatuses';
 
-import ModalNuevoCliente from '@/components/modals/ModalNuevoCliente.vue';
+import ModalCliente from '@/components/modals/ModalCliente.vue';
 import PaginadorComponent from '@/components/ui/PaginadorComponent.vue';
 import PanelContenedor from '@/components/ui/PanelContenedor.vue';
 import { useToast } from '@/composables/useToast';
@@ -203,10 +203,10 @@ onMounted(() => {
         </PanelContenedor>
     </div>
     
-    <ModalNuevoCliente 
+    <ModalCliente 
         v-if="mostrarModalNuevoCliente" 
         @cerrar="mostrarModalNuevoCliente = false" 
-        @cliente-creado="onClienteCreado"
+        @guardado="onClienteCreado"
         @error="onClienteError"
     />
 </template>

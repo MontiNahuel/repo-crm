@@ -79,5 +79,40 @@ export const clientService = {
             }
             throw new Error('An unexpected error occurred while fetching the client. Please try again later.');
         }
+    },
+
+    async editarCliente(clienteId: number, datosParciales: Partial<IClienteCreacion>) {
+        try {
+            const { data } = await api.patch(`/clientes/${clienteId}`, datosParciales);
+            return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`An error occurred while updating the client: ${error.message}`);
+            }
+            throw new Error('An unexpected error occurred while updating the client. Please try again later.');
+        }
+    },
+
+    async eliminarCliente(clienteId: number) {
+        try {
+            await api.delete(`/clientes/${clienteId}`);
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`An error occurred while deleting the client: ${error.message}`);
+            }
+            throw new Error('An unexpected error occurred while deleting the client. Please try again later.');
+        }
+    },
+
+    async getPipeline() {
+        try {
+            const { data } = await api.get('/clientes/pipeline');
+            return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`An error occurred while fetching the pipeline: ${error.message}`);
+            }
+            throw new Error('An unexpected error occurred while fetching the pipeline. Please try again later.');
+        }
     }
 };

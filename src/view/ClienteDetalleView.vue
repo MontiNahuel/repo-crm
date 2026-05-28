@@ -6,7 +6,7 @@ import ListaTareas from '@/components/tasks/ListaTareas.vue';
 import { useTasks } from '@/composables/useTasks';
 import { useTaskModals } from '@/composables/useTasksModal';
 import { type ICliente } from '@/services/clients/interfacesClientes';
-import { type Tarea } from '@/services/tareas/interfacesTareas';
+import { type Tarea } from '@/interfaces/interfacesTareas';
 import { clientService } from '@/services/clients/clientService';
 import PaginadorComponent from '@/components/ui/PaginadorComponent.vue';
 import NotasCliente from '@/components/viewClientes/NotasCliente.vue';
@@ -18,6 +18,7 @@ import type { ClientStatus } from '@/consts/clientStatuses';
 import ModalConfirmacion from '@/components/modals/ModalConfirmacion.vue';
 import CrearTareaModal from '@/components/modals/CrearTareaModal.vue';
 import ModalTareasIA from '@/components/modals/ModalTareasIA.vue';
+import ModalCliente from '@/components/modals/ModalCliente.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -25,11 +26,14 @@ const paginaActual = ref(1)
 const limit = 3
 const masTareas = ref(true)
 const { loadTasksByClient, toggleCompletada } = useTasks();
-const { cambiarEstadoDelCliente, cambiandoEstado } = useClients();
+const { cambiarEstadoDelCliente, cambiandoEstado, eliminarCliente } = useClients();
 
 const cliente = ref<ICliente | null>(null);
 const cargando = ref(true);
 const cargandoTareas = ref(true);
+const mostrarModalEditar = ref(false);
+const mostrarModalEliminarCliente = ref(false);
+const cargandoEliminacionCliente = ref(false);
 
 const tareasCliente = ref<Tarea[]>([]);
 
@@ -82,6 +86,25 @@ const modales = useTaskModals(async () => {
     }
     await cargarTareasCliente();
 });
+
+const onClienteEditado = async () => {
+    mostrarModalEditar.value = false;
+    await cargarDetalleCliente();
+};
+
+const ejecutarEliminacionCliente = async () => {
+    if (!cliente.value) return;
+    cargandoEliminacionCliente.value = true;
+    try {
+        await eliminarCliente(cliente.value.id);
+        mostrarModalEliminarCliente.value = false;
+        router.push('/clientes');
+    } catch (error) {
+        console.error("Error al eliminar cliente:", error);
+    } finally {
+        cargandoEliminacionCliente.value = false;
+    }
+};
 
 const actualizarEstadoDelCliente = async (nuevoEstado: ClientStatus) => {
     // Solo pasamos el objeto y el nuevo valor. 
@@ -160,9 +183,12 @@ onMounted(async () => {
                             <p class="text-sm text-text-main">{{ cliente.direccion }}</p>
                         </div>
                         -->
-                        <div class="pt-4 border-t border-border-main transition-colors">
-                            <button class="w-full bg-bg-main hover:bg-bg-hover text-text-main border border-border-main px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
-                                Editar Cliente
+                        <div class="pt-4 border-t border-border-main transition-colors flex flex-col gap-2">
+                            <button @click="mostrarModalEditar = true" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">
+                                Editar Perfil
+                            </button>
+                            <button @click="mostrarModalEliminarCliente = true" class="w-full bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/20 dark:hover:bg-red-950/30 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors">
+                                Eliminar Cliente
                             </button>
                         </div>
                     </div>
@@ -229,6 +255,23 @@ onMounted(async () => {
                 :tareas="modales.tareasRecientesIA.value" 
                 @close="modales.cerrarModalTareasPorIA(true)" 
                 @borrar-tarea="modales.descartarTareaIA" 
+            />
+
+            <ModalCliente 
+                v-if="mostrarModalEditar" 
+                :cliente="cliente"
+                @cerrar="mostrarModalEditar = false"
+                @guardado="onClienteEditado"
+            />
+
+            <ModalConfirmacion 
+                v-if="mostrarModalEliminarCliente" 
+                titulo="Eliminar Cliente" 
+                mensaje="¿Estás seguro de que querés eliminar permanentemente este cliente? Esta acción no se puede deshacer." 
+                textoConfirmar="Sí, eliminar cliente" 
+                :cargando="cargandoEliminacionCliente" 
+                @confirmar="ejecutarEliminacionCliente" 
+                @cancelar="mostrarModalEliminarCliente = false" 
             />
         </Teleport>
     </div>

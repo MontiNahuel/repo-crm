@@ -3,12 +3,13 @@ import { clientService } from "@/services/clients/clientService";
 import { cambiosClientesService } from "@/services/clients/cambiosClientesService";
 import { useToast } from "./useToast";
 import type { ClientStatus } from "@/consts/clientStatuses";
-import type { ICliente } from "@/services/clients/interfacesClientes";
+import type { ICliente, IClienteCreacion } from "@/services/clients/interfacesClientes";
 
 export function useClients() {
 
     const toast = useToast();
     const cambiandoEstado = ref(false);
+    const guardando = ref(false);
 
     const cambiarEstadoDelCliente = async (cliente: ICliente, nuevoEstado: ClientStatus, antiguoEstado: ClientStatus) => {
         // 1. Guardamos el backup INTERNAMENTE en el composable
@@ -33,8 +34,38 @@ export function useClients() {
         }
     };
 
+    const editarCliente = async (clienteId: number, datosParciales: Partial<IClienteCreacion>) => {
+        guardando.value = true;
+        try {
+            const data = await clientService.editarCliente(clienteId, datosParciales);
+            toast.exito('¡Cliente actualizado con éxito!');
+            return data;
+        } catch (error) {
+            toast.error('Error al actualizar el cliente.');
+            throw error;
+        } finally {
+            guardando.value = false;
+        }
+    };
+
+    const eliminarCliente = async (clienteId: number) => {
+        guardando.value = true;
+        try {
+            await clientService.eliminarCliente(clienteId);
+            toast.exito('¡Cliente eliminado con éxito!');
+        } catch (error) {
+            toast.error('Error al eliminar el cliente.');
+            throw error;
+        } finally {
+            guardando.value = false;
+        }
+    };
+
     return {
         cambiarEstadoDelCliente,
-        cambiandoEstado // Exponemos el loading para que el componente lo use
+        cambiandoEstado,
+        editarCliente,
+        eliminarCliente,
+        guardando
     };
 }
