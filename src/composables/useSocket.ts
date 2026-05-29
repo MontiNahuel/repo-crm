@@ -1,7 +1,7 @@
 import { io, Socket } from "socket.io-client";
 import { ref } from "vue";
 
-const socketURL = 'http://localhost:8000';
+const socketURL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:8000';
 const socket: Socket = io(socketURL, {
     autoConnect: false,
     transports: ["websocket"]

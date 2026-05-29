@@ -55,6 +55,30 @@ Se utiliza para obtener un nuevo token de acceso cuando el actual (30 min de dur
     }
     ```
 
+### 👥 Buscar Colaboradores / Directorio (Buscador estilo Teams)
+Permite buscar y obtener la lista de colaboradores activos del sistema para el inicio de chats directos o la creación de grupos de manera altamente escalable.
+*   **Ruta:** `GET /usuarios/colaboradores`
+*   **Query Params (Opcionales):**
+    *   `busqueda`: string (Filtra por nombre, apellido o email)
+*   **Reglas de Rendimiento (Escalabilidad de Varios Miles de Usuarios):**
+    > [!IMPORTANT]
+    > * **Mínimo de caracteres:** Si el parámetro `busqueda` no se envía, está vacío o tiene **menos de 2 caracteres**, el backend responderá con una lista vacía `[]` de inmediato sin consultar la base de datos (ahorro total de recursos).
+    > * **Límite físico:** Los resultados de la base de datos están capados a un máximo estricto de **50 registros** (`limit=50`).
+    > * **Debounce Sugerido:** Se recomienda implementar un antirebote (Debounce) de **300ms** en el input del frontend para evitar múltiples llamadas sucesivas mientras el usuario tipea.
+*   **Respuesta Exitosa (200 OK):**
+    ```json
+    [
+      {
+        "id": 2,
+        "email": "matias@correo.com",
+        "rol": "VENDEDOR",
+        "es_activo": true,
+        "nombre": "Matias",
+        "apellido": "Calabrese"
+      }
+    ]
+    ```
+
 ---
 
 ## 📊 2. Clientes & Tablero Kanban (Protegidos)
@@ -393,6 +417,9 @@ Crea una nueva sala de chat grupal con múltiples colaboradores. El creador del 
 
 #### 3. Listar Mis Conversaciones Activas
 Obtiene un listado de todas las salas de chat (tanto 1-a-1 como grupales) en las que participa el colaborador autenticado. Útil para rellenar la barra lateral del chat.
+> [!NOTE]
+> **Optimización de Rendimiento (Chats Fantasma):**
+> Para optimizar red y CPU, este listado filtra y **excluye** los chats directos (1-a-1) vacíos (`last_message: null`). Solo aparecerán en la barra lateral una vez que se envíe el primer mensaje. Los chats grupales se muestran siempre desde su creación.
 *   **Ruta:** `GET /chat/conversations`
 *   **Respuesta Exitosa (200 OK):**
     ```json

@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore';
 
 // Creamos una instancia pre-configurada
 const api = axios.create({
-  baseURL: 'http://localhost:8000', // La URL de tu FastAPI
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000', // URL dinámica en producción
   headers: {
     'Content-Type': 'application/json',
   },
