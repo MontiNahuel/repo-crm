@@ -34,7 +34,7 @@ const form = ref<IProductCreate>({
     descripcion: '',
     precio: 0,
     is_active: true,
-    id_categoria: 0, 
+    id_categoria: null as any, 
     inventario: {
         stock: 0,
         stock_minimo: 5
@@ -48,7 +48,7 @@ const resetForm = () => {
         descripcion: '',
         precio: 0,
         is_active: true,
-        id_categoria: 0,
+        id_categoria: null as any,
         inventario: { stock: 0, stock_minimo: 5 }
     }
     tipoItem.value = 'producto'
