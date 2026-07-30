@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import type { IProducts } from '@/interfaces/IProducts';
 import { useProductsModal } from '@/composables/useProductsModal';
+import { useProducts } from '@/composables/useProducts';
 import type { IProductCreate } from '@/interfaces/IProducts';
-// TODO: Importar tu composable o servicio real cuando lo tengas
-// import { useProducts } from '@/composables/useProducts';
-// const { submitProduct } = useProducts();
+import { useCategories } from '@/composables/useCategories';
 
-const emit = defineEmits(['close', 'productoGuardado'])
+const emit = defineEmits(['close', 'productoGuardado', 'producto-creado', 'producto-actualizado'])
 
 const props = defineProps<{
     productoAEditar?: IProducts | null;
@@ -16,14 +15,12 @@ const props = defineProps<{
 const cargando = ref(false)
 
 const { submitProduct } = useProductsModal();
+const { editProductExistente } = useProducts();
+const { categorias, cargarCategorias } = useCategories();
 
-// Categorías hardcodeadas temporalmente basadas en tus INSERTs de SQL.
-// TAREA PARA DESPUÉS DE DORMIR: Cargar esto desde la API.
-const categorias = ref([
-    { id: 1, nombre: 'Hardware' },
-    { id: 2, nombre: 'Software' },
-    { id: 3, nombre: 'Servicios' }
-])
+onMounted(() => {
+    cargarCategorias();
+});
 
 // Variable auxiliar para la UI (controla si mostramos los campos de stock)
 const tipoItem = ref<'producto' | 'servicio'>('producto')
@@ -93,18 +90,18 @@ const submitFormulario = async () => {
 
         console.log("Enviando al backend:", payload);
 
-        // TODO: Descomentar esto cuando conectes tu endpoint de creación
-        /*
-        const productoGuardado = props.productoAEditar 
-            ? await updateProduct(props.productoAEditar.id, payload)
-            : await submitProduct(payload);
-        */
+        let guardado;
+        if (props.productoAEditar) {
+            guardado = await editProductExistente(props.productoAEditar.id, payload);
+            emit('producto-actualizado', guardado);
+            emit('productoGuardado', guardado);
+        } else {
+            guardado = await submitProduct(payload);
+            emit('producto-creado', guardado);
+            emit('productoGuardado', guardado);
+        }
 
-        await submitProduct(payload);
-
-        // Simulamos respuesta exitosa para que lo pruebes ahora
-        emit('productoGuardado', payload) 
-        emit('close')
+        emit('close');
         
     } catch (error) {
         console.log("Hubo un error al guardar el producto", error)

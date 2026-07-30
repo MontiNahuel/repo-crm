@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import PanelContenedor from '@/components/ui/PanelContenedor.vue';
 import PaginadorComponent from '@/components/ui/PaginadorComponent.vue';
 import { useProducts } from '@/composables/useProducts';
 import type { IProducts } from '@/interfaces/IProducts';
 import CreateProductModal from '@/components/modals/CreateProductModal.vue';
+import ModalGestionCategorias from '@/components/modals/ModalGestionCategorias.vue';
+import { useCategories } from '@/composables/useCategories';
 
-const { loadProducts } = useProducts();
+const router = useRouter();
+const { loadProducts, adjustProductStock } = useProducts();
+const { categorias, cargarCategorias } = useCategories();
 
 const buscador = ref('');
 const filtroCategoria = ref('');
 const filtroEstado = ref('');
 const cargando = ref(false);
+const mostrarModalCategorias = ref(false);
 
 const paginaActual = ref(1);
 const totalPaginas = ref(1);
@@ -40,6 +46,8 @@ const badgeEstado = (estado: string) => {
 };
 
 const mostrarModalNuevoProducto = ref(false);
+const productoAEditar = ref<IProducts | null>(null);
+
 
 watch(buscador, (nuevoValor) => {
     if (timeoutBusqueda) {
@@ -106,8 +114,75 @@ const cargarProductos = async () => {
     }
 };
 
+const alActualizarCategorias = () => {
+    cargarCategorias();
+    cargarProductos();
+};
+
+// --- Edición Interactiva de Stock ---
+const editandoStockId = ref<number | null>(null);
+const valorStockEdicion = ref<number>(0);
+
+const iniciarEdicionStock = (producto: IProducts) => {
+    if (!producto.inventario) return;
+    editandoStockId.value = producto.id;
+    valorStockEdicion.value = producto.inventario.stock;
+};
+
+const cancelarEdicionStock = () => {
+    editandoStockId.value = null;
+};
+
+const cambiarStockRapido = async (producto: IProducts, ajuste: number) => {
+    if (!producto.inventario) return;
+    try {
+        const prodActualizado = await adjustProductStock(producto.id, ajuste);
+        const idx = productos.value.findIndex(p => p.id === producto.id);
+        if (idx !== -1) {
+            productos.value[idx] = prodActualizado;
+        }
+    } catch (error) {
+        console.error('Error al cambiar stock rápido:', error);
+    }
+};
+
+const guardarAjusteAbsoluto = async (producto: IProducts) => {
+    if (!producto.inventario) return;
+    const nuevoValor = Number(valorStockEdicion.value);
+    if (isNaN(nuevoValor) || nuevoValor < 0) {
+        cancelarEdicionStock();
+        return;
+    }
+    const ajuste = nuevoValor - producto.inventario.stock;
+    if (ajuste === 0) {
+        cancelarEdicionStock();
+        return;
+    }
+    try {
+        const prodActualizado = await adjustProductStock(producto.id, ajuste);
+        const idx = productos.value.findIndex(p => p.id === producto.id);
+        if (idx !== -1) {
+            productos.value[idx] = prodActualizado;
+        }
+        cancelarEdicionStock();
+    } catch (error) {
+        console.error('Error al cambiar stock absoluto:', error);
+    }
+};
+
+// --- Controladores de Creación y Detalle ---
+const abrirDetalle = (producto: IProducts) => {
+    router.push(`/productos/${producto.id}`);
+};
+
+const abrirCrear = () => {
+    productoAEditar.value = null;
+    mostrarModalNuevoProducto.value = true;
+};
+
 onMounted(() => {
     cargarProductos();
+    cargarCategorias();
 });
 </script>
 
@@ -119,10 +194,14 @@ onMounted(() => {
                 <h1 class="text-2xl font-bold text-text-main transition-colors">Directorio de Productos</h1>
                 <p class="text-sm text-text-muted transition-colors">Gestioná tu catálogo de productos y servicios</p>
             </div>
-            
-            <button @click="mostrarModalNuevoProducto = true" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-sm shadow-blue-200 dark:shadow-none">
-                + Nuevo Producto
-            </button>
+            <div class="flex items-center gap-3">
+                <button @click="mostrarModalCategorias = true" class="px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm border border-border-main hover:bg-bg-hover text-text-main transition duration-200 cursor-pointer flex items-center gap-1.5 shadow-sm">
+                    📁 Administrar Categorías
+                </button>
+                <button @click="abrirCrear" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm transition shadow-sm shadow-blue-200 dark:shadow-none cursor-pointer">
+                    + Nuevo Producto
+                </button>
+            </div>
         </div>
 
         <PanelContenedor>
@@ -138,9 +217,13 @@ onMounted(() => {
                 <div class="flex gap-3 w-full lg:w-auto">
                     <select v-model="filtroCategoria" class="flex-1 lg:flex-none px-4 py-2 rounded-xl border border-border-main bg-sidebar text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition text-sm appearance-none cursor-pointer">
                         <option value="">Todas las categorías</option>
-                        <option value="Hardware">Hardware</option>
-                        <option value="Software">Software</option>
-                        <option value="Servicios">Servicios</option>
+                        <option 
+                            v-for="cat in categorias" 
+                            :key="cat.id" 
+                            :value="cat.nombre"
+                        >
+                            {{ cat.nombre }}
+                        </option>
                     </select>
 
                     <select v-model="filtroEstado" class="flex-1 lg:flex-none px-4 py-2 rounded-xl border border-border-main bg-sidebar text-text-main focus:ring-2 focus:ring-blue-500 outline-none transition text-sm appearance-none cursor-pointer">
@@ -193,12 +276,70 @@ onMounted(() => {
                                 ${{ producto.precio.toLocaleString('es-AR') }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <template v-if="producto.inventario">
-                                    <span :class="producto.inventario.stock > producto.inventario.stock_minimo ? 'text-text-main' : 'text-orange-500 font-bold'">
-                                        {{ producto.inventario.stock }} un.
-                                    </span>
-                                </template>
-                                <span v-else class="text-text-muted text-xs italic">N/A</span>
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <template v-if="producto.inventario">
+                                        <!-- Botón - -->
+                                        <button 
+                                            v-if="editandoStockId !== producto.id"
+                                            @click="cambiarStockRapido(producto, -1)" 
+                                            class="w-5 h-5 rounded border border-border-main hover:bg-bg-hover text-text-muted hover:text-text-main transition flex items-center justify-center font-bold text-xs cursor-pointer select-none"
+                                            title="Restar 1 unidad"
+                                        >
+                                            -
+                                        </button>
+
+                                        <!-- Modo Edición Absoluta -->
+                                        <div v-if="editandoStockId === producto.id" class="flex items-center gap-1">
+                                            <input 
+                                                v-model.number="valorStockEdicion" 
+                                                type="number"
+                                                min="0"
+                                                class="w-12 px-1 py-0.5 text-center text-xs rounded border border-border-main bg-sidebar text-text-main outline-none focus:ring-1 focus:ring-blue-500 font-bold"
+                                                @keyup.enter="guardarAjusteAbsoluto(producto)"
+                                                @keyup.esc="cancelarEdicionStock"
+                                                autofocus
+                                            >
+                                            <button 
+                                                @click="guardarAjusteAbsoluto(producto)"
+                                                class="p-0.5 rounded bg-green-600 hover:bg-green-700 text-white transition text-[10px] font-bold cursor-pointer"
+                                                title="Confirmar"
+                                            >
+                                                ✓
+                                            </button>
+                                            <button 
+                                                @click="cancelarEdicionStock"
+                                                class="p-0.5 rounded border border-border-main hover:bg-bg-hover text-text-muted transition text-[10px] font-bold cursor-pointer"
+                                                title="Cancelar"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+
+                                        <!-- Mostrar Stock Normal Clickable -->
+                                        <span 
+                                            v-else
+                                            @click="iniciarEdicionStock(producto)"
+                                            :class="[
+                                                'min-w-[32px] text-center px-1.5 py-0.5 rounded hover:bg-bg-hover cursor-pointer font-semibold transition select-none text-xs',
+                                                producto.inventario.stock > producto.inventario.stock_minimo ? 'text-text-main' : 'text-orange-500 font-bold'
+                                            ]"
+                                            title="Click para ajustar stock exacto"
+                                        >
+                                            {{ producto.inventario.stock }}
+                                        </span>
+
+                                        <!-- Botón + -->
+                                        <button 
+                                            v-if="editandoStockId !== producto.id"
+                                            @click="cambiarStockRapido(producto, 1)" 
+                                            class="w-5 h-5 rounded border border-border-main hover:bg-bg-hover text-text-muted hover:text-text-main transition flex items-center justify-center font-bold text-xs cursor-pointer select-none"
+                                            title="Sumar 1 unidad"
+                                        >
+                                            +
+                                        </button>
+                                    </template>
+                                    <span v-else class="text-text-muted text-xs italic">N/A</span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <span :class="['inline-block w-24 text-center px-3 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider transition-all', badgeEstado(calcularEstado(producto))]">
@@ -206,9 +347,12 @@ onMounted(() => {
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <div class="text-blue-500 hover:text-blue-400 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                <button 
+                                    @click="abrirDetalle(producto)"
+                                    class="text-blue-500 hover:text-blue-400 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border-none bg-transparent"
+                                >
                                     Ver Detalle →
-                                </div>
+                                </button>
                             </td>
                         </tr>
                     </tbody>
@@ -228,7 +372,14 @@ onMounted(() => {
             />
         </PanelContenedor>
 
-        <CreateProductModal v-if="mostrarModalNuevoProducto" @close="mostrarModalNuevoProducto = false" @producto-creado="cargarProductos" />
+        <CreateProductModal 
+            v-if="mostrarModalNuevoProducto" 
+            :productoAEditar="productoAEditar"
+            @close="mostrarModalNuevoProducto = false" 
+            @producto-creado="cargarProductos"
+            @producto-actualizado="cargarProductos"
+        />
+        <ModalGestionCategorias v-if="mostrarModalCategorias" @cerrar="mostrarModalCategorias = false" @actualizado="alActualizarCategorias" />
     </div>
 </template>
 
