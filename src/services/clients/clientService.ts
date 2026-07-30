@@ -114,5 +114,41 @@ export const clientService = {
             }
             throw new Error('An unexpected error occurred while fetching the pipeline. Please try again later.');
         }
+    },
+
+    async getResumenIa(clienteId: number) {
+        try {
+            const { data } = await api.get(`/clientes/${clienteId}/resumen-ia`);
+            return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`An error occurred while fetching AI summary: ${error.message}`);
+            }
+            throw new Error('An unexpected error occurred while fetching AI summary.');
+        }
+    },
+
+    async generarResumenIa(clienteId: number) {
+        try {
+            const { data } = await api.post(`/clientes/${clienteId}/resumen-ia`);
+            return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`An error occurred while generating AI summary: ${error.message}`);
+            }
+            throw new Error('An unexpected error occurred while generating AI summary.');
+        }
+    },
+
+    async getHistorialResumenesIa(clienteId: number) {
+        try {
+            const { data } = await api.get(`/clientes/${clienteId}/resumen-ia/historial`);
+            return data;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`An error occurred while fetching AI summary history: ${error.message}`);
+            }
+            throw new Error('An unexpected error occurred while fetching AI summary history.');
+        }
     }
 };

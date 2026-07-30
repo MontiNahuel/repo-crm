@@ -90,6 +90,25 @@ const router = createRouter({
             requiresAuth: true,
             title: 'Productos'
           }
+        },
+        {
+          path: '/productos/:id',
+          name: 'producto-detalle',
+          component: () => import('@/view/ProductoDetalleView.vue'),
+          meta: {
+            requiresAuth: true,
+            showBack: true,
+            title: 'Detalle del Producto'
+          }
+        },
+        {
+          path: '/equipos',
+          name: 'equipos',
+          component: () => import('@/view/EquiposView.vue'),
+          meta: {
+            requiresAuth: true,
+            title: 'Equipos de Trabajo'
+          }
         }
       ]
     }

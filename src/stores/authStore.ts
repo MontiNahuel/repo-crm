@@ -3,6 +3,8 @@ import { ref, computed } from "vue";
 import router from "@/router";
 import { jwtDecode } from "jwt-decode";
 
+import { useSocket } from "@/composables/useSocket";
+
 interface TokenPayload {
     sub: string;
     rol: string;
@@ -52,6 +54,14 @@ export const useAuthStore = defineStore("auth", () => {
     };
 
     const logout = () => {
+        // Desconectar socket físico de la sesión anterior
+        try {
+            const { disconnect } = useSocket();
+            disconnect();
+        } catch (error) {
+            console.error("Error al desconectar socket en logout:", error);
+        }
+
         token.value = null;
         refreshToken.value = null;
         localStorage.removeItem("token");

@@ -77,6 +77,14 @@ const cerrarSesion = () => {
             </router-link>
 
             <router-link 
+                    to="/equipos" 
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-text-muted hover:bg-bg-hover hover:text-text-main transition-colors font-medium"
+                    active-class="bg-bg-active text-text-active font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                Equipos de Trabajo
+            </router-link>
+
+            <router-link 
                          v-if="authStore.userRole?.toLowerCase() === 'admin'"
                          to="/admin" 
                          class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-text-muted hover:bg-bg-hover hover:text-text-main transition-colors font-medium"
