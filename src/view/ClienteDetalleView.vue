@@ -17,8 +17,9 @@ import type { ClientStatus } from '@/consts/clientStatuses';
 // --- Modales ---
 import ModalConfirmacion from '@/components/modals/ModalConfirmacion.vue';
 import CrearTareaModal from '@/components/modals/CrearTareaModal.vue';
-import ModalTareasIA from '@/components/modals/ModalTareasIA.vue';
 import ModalCliente from '@/components/modals/ModalCliente.vue';
+import ModalTareasIA from '@/components/modals/ModalTareasIA.vue';
+import ResumenIaPreview from '@/components/viewClientes/ResumenIaPreview.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -193,6 +194,12 @@ onMounted(async () => {
                         </div>
                     </div>
                 </PanelContenedor>
+
+                <!-- Vista previa y acceso al Resumen Ejecutivo por IA -->
+                <ResumenIaPreview 
+                    :cliente-id="cliente.id"
+                    :cliente-nombre="cliente.nombre"
+                />
             </div>
 
             <div class="lg:col-span-2 space-y-6">
