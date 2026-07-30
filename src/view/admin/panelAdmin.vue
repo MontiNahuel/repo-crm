@@ -1,95 +1,234 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useUserAdmin } from '@/composables/useUserAdmin'
+import { useGroupsAdmin } from '@/composables/useGroupsAdmin'
+import type { IUsuario } from '@/services/admin/userService'
+
+import TablaUsuariosAdmin from '@/components/admin/TablaUsuariosAdmin.vue'
+import ListaGruposAdmin from '@/components/admin/ListaGruposAdmin.vue'
+import ModalUsuario from '@/components/modals/ModalUsuario.vue'
+import ModalCrearGrupo from '@/components/modals/ModalCrearGrupo.vue'
+import ModalConfirmacion from '@/components/modals/ModalConfirmacion.vue'
 
 // Pestaña activa por defecto
 const tabActiva = ref('usuarios')
 
-// Datos de prueba temporales para maquetar
-const usuariosTemp = ref([
-    { id: 1, nombre: 'Nahuel Monti', rol: 'ADMIN', email: 'nahuel@crm.com' },
-    { id: 4, nombre: 'Vendedor 1', rol: 'VENDEDOR', email: 'vend1@crm.com' },
-    { id: 5, nombre: 'Vendedor 2', rol: 'VENDEDOR', email: 'vend2@crm.com' }
-])
+const {
+    usuarios,
+    cargando: cargandoUsuarios,
+    cargarUsuarios,
+    toggleEstadoUsuario
+} = useUserAdmin()
+
+const {
+    grupos,
+    cargandoGrupos,
+    cargarGrupos,
+    eliminarGrupo,
+    asignarMiembro,
+    removerMiembro
+} = useGroupsAdmin()
+
+const mostrarModal = ref(false)
+const mostrarModalGrupo = ref(false)
+const usuarioSeleccionado = ref<IUsuario | null>(null)
+
+// Confirmación de borrado de grupo
+const mostrarConfirmacionGrupo = ref(false)
+const grupoParaBorrar = ref<number | null>(null)
+const eliminandoGrupo = ref(false)
+
+onMounted(() => {
+    cargarUsuarios()
+    cargarGrupos()
+})
+
+const abrirCrear = () => {
+    usuarioSeleccionado.value = null
+    mostrarModal.value = true
+}
+
+const abrirEditar = (user: IUsuario) => {
+    usuarioSeleccionado.value = user
+    mostrarModal.value = true
+}
+
+const alGuardar = () => {
+    mostrarModal.value = false
+    cargarUsuarios()
+}
+
+const alGuardarGrupo = () => {
+    mostrarModalGrupo.value = false
+    cargarGrupos()
+}
+
+const solicitarBorradoGrupo = (grupoId: number) => {
+    grupoParaBorrar.value = grupoId
+    mostrarConfirmacionGrupo.value = true
+}
+
+const confirmarBorrarGrupo = async () => {
+    if (grupoParaBorrar.value !== null) {
+        eliminandoGrupo.value = true
+        try {
+            await eliminarGrupo(grupoParaBorrar.value)
+            await cargarUsuarios()
+        } finally {
+            eliminandoGrupo.value = false
+            grupoParaBorrar.value = null
+            mostrarConfirmacionGrupo.value = false
+        }
+    }
+}
+
+// Filtro computado: Usuarios sin grupo (solo vendedores o supervisores)
+const usuariosSinGrupo = computed(() => {
+    const idsEnGrupos = new Set<number>()
+    grupos.value.forEach(g => {
+        g.miembros?.forEach(m => {
+            if (m.id) idsEnGrupos.add(m.id)
+            if (m.user_id) idsEnGrupos.add(m.user_id)
+        })
+    })
+    return usuarios.value.filter(u => 
+        !idsEnGrupos.has(u.id) && 
+        (u.rol === 'VENDEDOR' || u.rol === 'SUPERVISOR') && 
+        u.es_activo
+    )
+})
+
+// Acciones sobre miembros
+const alAsignarMiembro = async ({ grupoId, usuarioId }: { grupoId: number; usuarioId: number }) => {
+    try {
+        await asignarMiembro(grupoId, usuarioId)
+        await cargarUsuarios()
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+const alRemoverMiembro = async ({ grupoId, usuarioId }: { grupoId: number; usuarioId: number }) => {
+    await removerMiembro(grupoId, usuarioId)
+    await cargarUsuarios()
+}
 </script>
 
 <template>
     <div class="p-6 max-w-7xl mx-auto animate-fade-in">
         
+        <!-- Cabecera -->
         <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-text-main transition-colors">Torre de Control</h1>
-                <p class="text-sm text-text-muted mt-1 transition-colors">Gestión general de usuarios, grupos y asignaciones.</p>
+                <p class="text-sm text-text-muted mt-1 transition-colors">Gestión general de usuarios, grupos y asignaciones del sistema.</p>
             </div>
-            <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm">
-                + Nuevo Usuario
+            
+            <button 
+                v-if="tabActiva === 'usuarios'"
+                @click="abrirCrear"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-sm hover:shadow"
+            >
+                <span>+</span> Nuevo Usuario
+            </button>
+            <button 
+                v-else-if="tabActiva === 'grupos'"
+                @click="mostrarModalGrupo = true"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-all duration-200 cursor-pointer flex items-center gap-1.5 shadow-sm hover:shadow"
+            >
+                <span>+</span> Nuevo Grupo
             </button>
         </div>
 
+        <!-- Selector de Pestañas -->
         <div class="flex space-x-1 bg-bg-main p-1 rounded-xl border border-border-main mb-6 transition-colors w-full md:w-max">
             <button @click="tabActiva = 'usuarios'"
-                    :class="['px-4 py-2 text-sm font-medium rounded-lg transition-all flex-1 md:flex-none', 
-                            tabActiva === 'usuarios' ? 'bg-sidebar text-blue-500 shadow-sm' : 'text-text-muted hover:text-text-main']">
+                    :class="['px-4 py-2 text-sm font-medium rounded-lg transition-all flex-1 md:flex-none cursor-pointer', 
+                            tabActiva === 'usuarios' ? 'bg-sidebar text-blue-500 shadow-sm font-semibold' : 'text-text-muted hover:text-text-main']">
                 👤 Usuarios
             </button>
             <button @click="tabActiva = 'grupos'"
-                    :class="['px-4 py-2 text-sm font-medium rounded-lg transition-all flex-1 md:flex-none', 
-                            tabActiva === 'grupos' ? 'bg-sidebar text-blue-500 shadow-sm' : 'text-text-muted hover:text-text-main']">
+                    :class="['px-4 py-2 text-sm font-medium rounded-lg transition-all flex-1 md:flex-none cursor-pointer', 
+                            tabActiva === 'grupos' ? 'bg-sidebar text-blue-500 shadow-sm font-semibold' : 'text-text-muted hover:text-text-main']">
                 👥 Grupos de Trabajo
             </button>
             <button @click="tabActiva = 'tareas'"
-                    :class="['px-4 py-2 text-sm font-medium rounded-lg transition-all flex-1 md:flex-none', 
+                    :class="['px-4 py-2 text-sm font-medium rounded-lg transition-all flex-1 md:flex-none cursor-pointer', 
                             tabActiva === 'tareas' ? 'bg-sidebar text-blue-500 shadow-sm' : 'text-text-muted hover:text-text-main']">
                 📋 Tareas Globales
             </button>
         </div>
 
+        <!-- Contenedor Principal -->
         <div class="bg-sidebar border border-border-main rounded-2xl shadow-sm transition-colors overflow-hidden">
             
+            <!-- Pestaña Usuarios -->
             <div v-if="tabActiva === 'usuarios'" class="p-6">
-                <h2 class="text-lg font-bold text-text-main mb-4">Equipo Activo</h2>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-border-main text-text-muted text-sm">
-                                <th class="pb-3 font-semibold px-4">Nombre</th>
-                                <th class="pb-3 font-semibold px-4">Email</th>
-                                <th class="pb-3 font-semibold px-4">Rol</th>
-                                <th class="pb-3 font-semibold px-4 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="user in usuariosTemp" :key="user.id" 
-                                class="border-b border-border-main last:border-0 hover:bg-bg-hover transition-colors group">
-                                <td class="py-3 px-4 font-medium text-text-main">{{ user.nombre }}</td>
-                                <td class="py-3 px-4 text-text-muted text-sm">{{ user.email }}</td>
-                                <td class="py-3 px-4">
-                                    <span :class="['px-2 py-1 text-xs font-bold rounded-md', 
-                                          user.rol === 'ADMIN' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400']">
-                                        {{ user.rol }}
-                                    </span>
-                                </td>
-                                <td class="py-3 px-4 text-right">
-                                    <button class="text-text-muted hover:text-blue-500 transition-colors text-sm font-medium">Editar</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <TablaUsuariosAdmin 
+                    :usuarios="usuarios"
+                    :cargando="cargandoUsuarios"
+                    @editar="abrirEditar"
+                    @toggle-estado="toggleEstadoUsuario"
+                    @crear-primer-usuario="abrirCrear"
+                />
             </div>
 
-            <div v-if="tabActiva === 'grupos'" class="p-6 flex flex-col items-center justify-center text-center py-12">
-                <div class="w-16 h-16 bg-bg-main rounded-full flex items-center justify-center mb-4 text-2xl border border-border-main">👥</div>
-                <h3 class="text-text-main font-bold text-lg">Próximamente: Grupos</h3>
-                <p class="text-text-muted text-sm mt-1 max-w-sm">Acá armaremos los equipos de trabajo para asignar clientes y tareas masivas.</p>
+            <!-- Pestaña Grupos de Trabajo -->
+            <div v-if="tabActiva === 'grupos'" class="p-6">
+                <ListaGruposAdmin 
+                    :grupos="grupos"
+                    :cargando-grupos="cargandoGrupos"
+                    :usuarios-sin-grupo="usuariosSinGrupo"
+                    @eliminar-grupo="solicitarBorradoGrupo"
+                    @asignar-miembro="alAsignarMiembro"
+                    @remover-miembro="alRemoverMiembro"
+                    @crear-primer-grupo="mostrarModalGrupo = true"
+                    @nuevo-grupo="mostrarModalGrupo = true"
+                />
             </div>
 
-            <div v-if="tabActiva === 'tareas'" class="p-6 flex flex-col items-center justify-center text-center py-12">
+            <!-- Pestaña Tareas Globales (Teaser) -->
+            <div v-if="tabActiva === 'tareas'" class="p-6 flex flex-col items-center justify-center text-center py-16">
                 <div class="w-16 h-16 bg-bg-main rounded-full flex items-center justify-center mb-4 text-2xl border border-border-main">📋</div>
                 <h3 class="text-text-main font-bold text-lg">Próximamente: Asignaciones</h3>
                 <p class="text-text-muted text-sm mt-1 max-w-sm">Desde acá delegarás tareas a grupos enteros o vendedores específicos.</p>
             </div>
 
         </div>
+
+        <!-- Modales Teletransportados al Body para evitar que el transform/animación del padre los recorte -->
+        <Teleport to="body">
+            <ModalUsuario 
+                v-if="mostrarModal"
+                :usuario="usuarioSeleccionado"
+                @cerrar="mostrarModal = false"
+                @guardado="alGuardar"
+            />
+        </Teleport>
+
+        <Teleport to="body">
+            <ModalCrearGrupo 
+                v-if="mostrarModalGrupo"
+                @cerrar="mostrarModalGrupo = false"
+                @guardado="alGuardarGrupo"
+            />
+        </Teleport>
+
+        <Teleport to="body">
+            <ModalConfirmacion 
+                v-if="mostrarConfirmacionGrupo"
+                titulo="¿Eliminar Grupo de Trabajo?"
+                mensaje="Esta acción es irreversible. El grupo de chat asociado en MongoDB y todos sus registros serán eliminados de inmediato. Los miembros del grupo no serán eliminados pero pasarán a ser colaboradores independientes."
+                textoConfirmar="Eliminar Grupo"
+                :cargando="eliminandoGrupo"
+                @confirmar="confirmarBorrarGrupo"
+                @cancelar="mostrarConfirmacionGrupo = false"
+            />
+        </Teleport>
     </div>
 </template>
+
+<style scoped>
+.animate-fade-in { animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+</style>
